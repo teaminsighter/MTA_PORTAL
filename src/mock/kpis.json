@@ -1,0 +1,9 @@
+{
+  "leads_this_month": 128,
+  "avg_time_to_send_min": 6.4,
+  "agent_acceptance_pct": 78,
+  "pending_partial_sends": 3,
+  "sync_conflicts": 2,
+  "canary_status": "green",
+  "referral_revenue_mtd": 148200
+}

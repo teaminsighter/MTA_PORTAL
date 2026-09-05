@@ -1,0 +1,62 @@
+[
+  {
+    "id": "CAND-2201",
+    "name": "Piripi Katene",
+    "agency": "LJ Hooker",
+    "phone": "+64 22 118 8899",
+    "email": "piripi.k@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00421",
+    "confidence": "medium",
+    "reason_hint": "Sold 2 comps within 400m in the last 6 months."
+  },
+  {
+    "id": "CAND-2202",
+    "name": "Cassidy Vale",
+    "agency": "Harcourts",
+    "phone": "+64 21 887 4402",
+    "email": "cassidy.v@harcourts.co.nz",
+    "first_seen_lead_id": "MTA-2026-00421",
+    "confidence": "low",
+    "reason_hint": "Only one nearby sale, no MTA history."
+  },
+  {
+    "id": "CAND-2203",
+    "name": "Rebecca Chen",
+    "agency": "Independent",
+    "phone": "+64 21 552 0987",
+    "email": "rebecca@independent.co.nz",
+    "first_seen_lead_id": "MTA-2026-00420",
+    "confidence": "high",
+    "reason_hint": "Phone matches existing candidate record."
+  },
+  {
+    "id": "CAND-2204",
+    "name": "Matiu Rangi",
+    "agency": "Ray White",
+    "phone": "+64 27 990 6612",
+    "email": "matiu.r@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00420",
+    "confidence": "medium",
+    "reason_hint": "Name normalises against a partial existing record."
+  },
+  {
+    "id": "CAND-2205",
+    "name": "Sam Reid",
+    "agency": "Bayleys",
+    "phone": "+64 21 004 3390",
+    "email": "sam.reid@bayleys.co.nz",
+    "first_seen_lead_id": "MTA-2026-00418",
+    "confidence": "medium",
+    "reason_hint": "Two nearby sales, no existing MTA record."
+  },
+  {
+    "id": "CAND-2206",
+    "name": "Alicia Torres",
+    "agency": "Harcourts",
+    "phone": "+64 22 776 1128",
+    "email": "alicia.t@harcourts.co.nz",
+    "first_seen_lead_id": "MTA-2026-00418",
+    "confidence": "low",
+    "reason_hint": "Single nearby sale."
+  }
+]

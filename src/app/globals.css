@@ -1,26 +1,182 @@
+@import "../styles/tokens.css";
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
+/* ------------------------------------------------------------------ */
+/* Tailwind v4 theme — expose our tokens as first-class utilities.    */
+/* Any color/spacing referenced by Tailwind flows back to tokens.css. */
+/* ------------------------------------------------------------------ */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-inset: var(--surface-inset);
+  --color-surface-flat: var(--surface-flat);
+  --color-surface-elevated: var(--surface-elevated);
+
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-text-subtle: var(--text-subtle);
+
+  --color-border-token: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-on-accent: var(--on-accent);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+
+  --radius-neu-sm: var(--radius-sm);
+  --radius-neu: var(--radius);
+  --radius-neu-lg: var(--radius-lg);
+  --radius-neu-pill: var(--radius-pill);
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ------------------------------------------------------------------ */
+/* Base                                                               */
+/* ------------------------------------------------------------------ */
+html, body {
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-default);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+*, *::before, *::after {
+  border-color: var(--border);
+}
+
+::selection {
+  background: var(--accent-soft-bg);
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------------ */
+/* Component layer                                                    */
+/* ------------------------------------------------------------------ */
+@layer components {
+  /* ------ Neumorphic elevation (only 2 levels) ------------------- */
+  .neu-raised {
+    background: var(--surface);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-raised);
   }
-}
+  .neu-raised-sm {
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-raised-sm);
+  }
+  .neu-inset {
+    background: var(--surface-inset);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-inset);
+  }
+  .neu-inset-sm {
+    background: var(--surface-inset);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-inset-sm);
+  }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  /* ------ Flat surface (tables / dense readouts) ----------------- */
+  .surface-flat {
+    background: var(--surface-flat);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: none;
+  }
+
+  /* ------ Chips -------------------------------------------------- */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: var(--text-caption);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+  .chip-success { background: var(--success-bg); color: var(--success); }
+  .chip-warning { background: var(--warning-bg); color: var(--warning); }
+  .chip-danger  { background: var(--danger-bg);  color: var(--danger);  }
+  .chip-info    { background: var(--info-bg);    color: var(--info);    }
+  .chip-neutral { background: var(--neutral-bg); color: var(--text-muted); }
+
+  /* ------ Glassy accent CTA -------------------------------------- */
+  .btn-accent-glass {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border-radius: var(--radius-pill);
+    color: var(--on-accent);
+    font-weight: 600;
+    font-size: var(--text-default);
+    background: var(--accent-glass);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    box-shadow: var(--shadow-raised-sm);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .btn-accent-glass:hover {
+    transform: translateY(-1px);
+  }
+  .btn-accent-glass:active {
+    box-shadow: var(--shadow-inset-sm);
+    transform: translateY(0);
+  }
+  .btn-accent-glass:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* ------ Accent gradient text (used for brand mark) ------------- */
+  .accent-text {
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* ------ Tabular numerals for all numeric readouts -------------- */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* ------ Simple neumorphic input -------------------------------- */
+  .neu-input {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--surface-inset);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-inset-sm);
+    color: var(--text);
+    font-size: var(--text-body);
+    outline: none;
+    border: 1px solid transparent;
+  }
+  .neu-input::placeholder { color: var(--text-subtle); }
+  .neu-input:focus { border-color: var(--border-strong); }
+
+  /* ------ Type scale utilities ----------------------------------- */
+  .t-caption { font-size: var(--text-caption); line-height: var(--leading-tight); }
+  .t-body    { font-size: var(--text-body);    line-height: var(--leading-normal); }
+  .t-default { font-size: var(--text-default); line-height: var(--leading-normal); }
+  .t-section { font-size: var(--text-section); line-height: var(--leading-tight); font-weight: 600; }
+  .t-display { font-size: var(--text-display); line-height: var(--leading-tight); font-weight: 700; letter-spacing: -0.01em; }
 }

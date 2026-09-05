@@ -1,0 +1,118 @@
+/*
+ * MTA Design Tokens
+ *
+ * This is the ONLY file in the codebase that may contain raw color literals
+ * (hex / rgb / hsl / oklch). Every other file consumes values via CSS custom
+ * properties or Tailwind classes that reference them.
+ */
+
+:root {
+  /* ---------- Neutrals & surfaces ------------------------------------- */
+  --surface: #E9EDF2;              /* app background + raised neumorphic base */
+  --surface-inset: #DDE2EA;        /* ~4% darker for inset wells */
+  --surface-flat: #FFFFFF;         /* dense tables / numeric readouts */
+  --surface-elevated: #F1F4F8;     /* subtle lift where needed on same layer */
+
+  /* ---------- Text ---------------------------------------------------- */
+  --text: #1E232B;                 /* near-black warm */
+  --text-muted: #56606D;
+  --text-subtle: #8892A0;
+  --text-on-flat: #1E232B;
+
+  /* ---------- Borders ------------------------------------------------- */
+  --border: #D5DBE3;
+  --border-strong: #B6BFCC;
+
+  /* ---------- Accent (glassy red -> orange) --------------------------- */
+  --accent: #F5462D;
+  --accent-2: #FF8A1F;
+  --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+  --accent-glass: linear-gradient(
+    135deg,
+    rgba(245, 70, 45, 0.85),
+    rgba(255, 138, 31, 0.85)
+  );
+  --accent-soft-bg: rgba(245, 70, 45, 0.08);
+  --on-accent: #FFFFFF;
+
+  /* ---------- Semantic ------------------------------------------------ */
+  --success: #1F8A5B;
+  --success-bg: rgba(31, 138, 91, 0.12);
+  --warning: #C87A0A;
+  --warning-bg: rgba(200, 122, 10, 0.14);
+  --danger: #C8321F;
+  --danger-bg: rgba(200, 50, 31, 0.12);
+  --info: #2A6DD1;
+  --info-bg: rgba(42, 109, 209, 0.12);
+  --neutral-bg: rgba(86, 96, 109, 0.10);
+
+  /* ---------- Neumorphic shadow constituents -------------------------- */
+  --shadow-light: rgba(255, 255, 255, 0.85);
+  --shadow-dark: rgba(163, 177, 198, 0.55);
+
+  --shadow-raised:
+    -6px -6px 12px var(--shadow-light),
+     6px  6px 12px var(--shadow-dark);
+  --shadow-raised-sm:
+    -3px -3px 6px var(--shadow-light),
+     3px  3px 6px var(--shadow-dark);
+  --shadow-inset:
+    inset 4px 4px 8px var(--shadow-dark),
+    inset -4px -4px 8px var(--shadow-light);
+  --shadow-inset-sm:
+    inset 2px 2px 4px var(--shadow-dark),
+    inset -2px -2px 4px var(--shadow-light);
+
+  /* ---------- Radius -------------------------------------------------- */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* ---------- Type scale (5 steps only) ------------------------------- */
+  --text-caption: 12px;
+  --text-body: 14px;
+  --text-default: 16px;
+  --text-section: 22px;
+  --text-display: 32px;
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+
+  /* ---------- shadcn/ui vars, mapped to our tokens -------------------- */
+  /* shadcn primitives read these; keep them here so shadcn never emits
+     its own literals. */
+  --background: var(--surface);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface-flat);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--on-accent);
+  --secondary: var(--surface-inset);
+  --secondary-foreground: var(--text);
+  --muted: var(--surface-inset);
+  --muted-foreground: var(--text-muted);
+  --accent-color: var(--accent);
+  --accent-foreground: var(--on-accent);
+  --destructive: var(--danger);
+  --destructive-foreground: var(--on-accent);
+  --input: var(--border);
+  --ring: var(--accent);
+}
+
+/* Dark theme scaffold — placeholder values, not wired to a toggle yet. */
+[data-theme="dark"] {
+  --surface: #1A1F27;
+  --surface-inset: #141920;
+  --surface-flat: #22282F;
+  --surface-elevated: #1F252D;
+  --text: #ECEFF3;
+  --text-muted: #A7B0BC;
+  --text-subtle: #6E7784;
+  --text-on-flat: #ECEFF3;
+  --border: #2A313A;
+  --border-strong: #3B4451;
+  --shadow-light: rgba(255, 255, 255, 0.04);
+  --shadow-dark: rgba(0, 0, 0, 0.55);
+}

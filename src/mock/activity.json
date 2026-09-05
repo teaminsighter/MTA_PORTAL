@@ -1,0 +1,17 @@
+{
+  "MTA-2026-00421": [
+    { "type": "lead_received",   "at": "2026-09-05T02:14:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-05T02:14:05Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-05T02:16:14Z", "detail": "Cotality: 10 property fields + 5 comparables fetched." },
+    { "type": "state_change",    "at": "2026-09-05T02:16:15Z", "detail": "State moved to ready_for_review." },
+    { "type": "vendor_open",     "at": "2026-09-05T02:33:12Z", "detail": "Vendor opened the workspace preview." }
+  ],
+  "MTA-2026-00418": [
+    { "type": "lead_received",   "at": "2026-09-04T20:38:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "enrichment_done", "at": "2026-09-04T20:40:30Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-04T20:52:00Z", "detail": "Sent to 3 agents (2 email + SMS, 1 email only)." },
+    { "type": "delivery",        "at": "2026-09-04T20:52:22Z", "detail": "Vendor email delivered." },
+    { "type": "delivery",        "at": "2026-09-04T20:52:41Z", "detail": "Agent email delivered to Tim Redgrave." },
+    { "type": "ac_sync_in",      "at": "2026-09-04T21:14:00Z", "detail": "AC deal stage updated: Contacted." }
+  ]
+}

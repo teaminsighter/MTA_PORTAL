@@ -1,0 +1,125 @@
+{
+  "MTA-2026-00421": [
+    {
+      "address": "24 Franklin Road, Ponsonby",
+      "sale_price": 2280000,
+      "sale_date": "2026-07-18",
+      "distance_m": 90,
+      "cv_at_sale": 2100000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "9 Renall Street, Ponsonby",
+      "sale_price": 2050000,
+      "sale_date": "2026-06-04",
+      "distance_m": 220,
+      "cv_at_sale": 1980000,
+      "agent_name": "Marcus Doyle",
+      "agency": "Ray White"
+    },
+    {
+      "address": "68 Wellington Street, Freemans Bay",
+      "sale_price": 1875000,
+      "sale_date": "2026-05-22",
+      "distance_m": 480,
+      "cv_at_sale": 1830000,
+      "agent_name": "Priyanka Rao",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "4 Crummer Road, Grey Lynn",
+      "sale_price": 2410000,
+      "sale_date": "2026-08-01",
+      "distance_m": 620,
+      "cv_at_sale": 2150000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "12 Norfolk Street, Ponsonby",
+      "sale_price": 2200000,
+      "sale_date": "2026-04-14",
+      "distance_m": 310,
+      "cv_at_sale": 2060000,
+      "agent_name": "Dylan Costa",
+      "agency": "Harcourts"
+    }
+  ],
+  "MTA-2026-00420": [
+    {
+      "address": "48 Victoria Avenue, Remuera",
+      "sale_price": 2110000,
+      "sale_date": "2026-06-30",
+      "distance_m": 60,
+      "cv_at_sale": 2020000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "5 Grange Road, Remuera",
+      "sale_price": 2265000,
+      "sale_date": "2026-05-11",
+      "distance_m": 340,
+      "cv_at_sale": 2100000,
+      "agent_name": "Ken Fletcher",
+      "agency": "Ray White"
+    },
+    {
+      "address": "17 Waimarie Street, Remuera",
+      "sale_price": 1980000,
+      "sale_date": "2026-07-08",
+      "distance_m": 410,
+      "cv_at_sale": 1930000,
+      "agent_name": "Rita Bhatti",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "22 Arney Road, Remuera",
+      "sale_price": 2540000,
+      "sale_date": "2026-08-19",
+      "distance_m": 560,
+      "cv_at_sale": 2280000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    }
+  ],
+  "MTA-2026-00418": [
+    {
+      "address": "12 Salamanca Road, Kelburn",
+      "sale_price": 1220000,
+      "sale_date": "2026-06-14",
+      "distance_m": 120,
+      "cv_at_sale": 1150000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    },
+    {
+      "address": "8 Kelburn Parade, Kelburn",
+      "sale_price": 1140000,
+      "sale_date": "2026-05-02",
+      "distance_m": 380,
+      "cv_at_sale": 1120000,
+      "agent_name": "Fiona Marsh",
+      "agency": "Ray White"
+    },
+    {
+      "address": "31 Upland Road, Kelburn",
+      "sale_price": 1310000,
+      "sale_date": "2026-07-21",
+      "distance_m": 540,
+      "cv_at_sale": 1240000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    },
+    {
+      "address": "5 Glasgow Street, Kelburn",
+      "sale_price": 1075000,
+      "sale_date": "2026-04-10",
+      "distance_m": 460,
+      "cv_at_sale": 1100000,
+      "agent_name": "Suzanne Park",
+      "agency": "Harcourts"
+    }
+  ]
+}
