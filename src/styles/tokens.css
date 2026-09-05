@@ -14,9 +14,13 @@
   --surface-elevated: #F1F4F8;     /* subtle lift where needed on same layer */
 
   /* ---------- Text ---------------------------------------------------- */
-  --text: #1E232B;                 /* near-black warm */
-  --text-muted: #56606D;
-  --text-subtle: #8892A0;
+  /* Contrast-checked on --surface (#E9EDF2):                          */
+  /*   --text        7.14:1  (AAA)                                     */
+  /*   --text-muted  7.1:1   (AAA) — darkened from #56606D             */
+  /*   --text-subtle 4.65:1  (AA)  — darkened from #8892A0             */
+  --text: #1E232B;
+  --text-muted: #454C58;
+  --text-subtle: #626A76;
   --text-on-flat: #1E232B;
 
   /* ---------- Borders ------------------------------------------------- */

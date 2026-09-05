@@ -179,4 +179,107 @@ html, body {
   .t-default { font-size: var(--text-default); line-height: var(--leading-normal); }
   .t-section { font-size: var(--text-section); line-height: var(--leading-tight); font-weight: 600; }
   .t-display { font-size: var(--text-display); line-height: var(--leading-tight); font-weight: 700; letter-spacing: -0.01em; }
+
+  /* ---------------------------------------------------------------- */
+  /* Motion vocabulary                                                */
+  /*                                                                  */
+  /* Curves:                                                          */
+  /*   --ease-standard   normal in/out                                */
+  /*   --ease-spring     overshoot for tick + count roll              */
+  /*                                                                  */
+  /* Utility classes:                                                 */
+  /*   .anim-enter        one-shot rise + fade (200ms)               */
+  /*   .anim-stagger      apply to a parent; children delay-index'd  */
+  /*   .anim-spring       overshoot scale for the tick               */
+  /*   .anim-slide-up     Send bar entrance from below viewport       */
+  /*   .anim-count-roll   Send bar count changes                      */
+  /*   .expand-row        grid-rows 0fr → 1fr collapse pattern        */
+  /* ---------------------------------------------------------------- */
+  .anim-enter {
+    animation: mta-rise 200ms var(--ease-standard) both;
+  }
+
+  .anim-stagger > * {
+    animation: mta-rise 200ms var(--ease-standard) both;
+  }
+  .anim-stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .anim-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .anim-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .anim-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .anim-stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .anim-stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .anim-stagger > *:nth-child(7) { animation-delay: 240ms; }
+  .anim-stagger > *:nth-child(8) { animation-delay: 280ms; }
+
+  .anim-spring {
+    animation: mta-spring 320ms var(--ease-spring) both;
+  }
+
+  .anim-slide-up {
+    animation: mta-slide-up 260ms var(--ease-spring) both;
+  }
+
+  .anim-count-roll {
+    animation: mta-count-roll 220ms var(--ease-spring) both;
+  }
+
+  /*
+   * Expand-row is the accessible way to animate height:auto without
+   * measuring the DOM. Parent sets grid-template-rows via [data-open].
+   */
+  .expand-row {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 220ms var(--ease-standard);
+  }
+  .expand-row > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .expand-row[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion tokens + keyframes                                          */
+/* ------------------------------------------------------------------ */
+:root {
+  --ease-standard: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes mta-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes mta-spring {
+  0%   { transform: scale(0.6); }
+  60%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes mta-slide-up {
+  from { transform: translateY(120%); opacity: 0; }
+  to   { transform: none;             opacity: 1; }
+}
+
+@keyframes mta-count-roll {
+  from { transform: translateY(60%); opacity: 0; }
+  to   { transform: none;            opacity: 1; }
+}
+
+/* Global respect for reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
 }
