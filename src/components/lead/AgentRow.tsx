@@ -10,21 +10,34 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { Agent } from "@/lib/mock";
-import { updateAgentAction } from "@/app/actions/agents";
+import type { PickInfo } from "@/lib/repo/agents";
+import { saveReasonNoteAction } from "@/app/actions/picks";
 import { cn } from "@/lib/utils";
 
 interface AgentRowProps {
+  /** Public lead id, e.g. "MTA-2026-00421". Used to key the pick row. */
+  leadPublicId: string;
   agent: Agent;
+  /** Existing lead_agent_picks row for (leadPublicId, agent.id), or null. */
+  pick: PickInfo | null;
   picked: boolean;
   onToggle: (agentId: string) => void;
 }
 
 /*
- * Collapsed height ≈ 56px. Five rows fit in the workspace centre column
- * without scrolling at 1440. Expanding surfaces the reason-hint editor,
- * phone, and per-year stats. Saving the reason calls updateAgentAction
- * with the row version; on version_conflict we surface an inline
- * "someone else updated" prompt and refresh the RSC data on click.
+ * Reason semantics:
+ *   - agent.reason_hint is a read-only template that pre-fills an empty
+ *     reason. We never overwrite it from the workspace.
+ *   - The consultant's reason lives on lead_agent_picks.reason_note,
+ *     keyed by (lead_id, agent_id), with its own `version` for
+ *     optimistic concurrency.
+ *   - First save of a pick creates the row (expected_version === 0).
+ *     Subsequent saves pass the last known version we got back.
+ *
+ * The textarea shows the pick reason if one exists; otherwise falls
+ * back to the hint. We consider the row "dirty" only when the current
+ * text diverges from what the DB knows (or from the hint, if no pick
+ * exists yet).
  */
 type SaveState =
   | { kind: "idle" }
@@ -33,27 +46,37 @@ type SaveState =
   | { kind: "conflict"; latestVersion: number }
   | { kind: "error"; message: string };
 
-export function AgentRow({ agent, picked, onToggle }: AgentRowProps) {
+export function AgentRow({
+  leadPublicId,
+  agent,
+  pick,
+  picked,
+  onToggle,
+}: AgentRowProps) {
   const [open, setOpen] = useState(false);
-  const [reason, setReason] = useState(agent.reason_hint);
-  const [version, setVersion] = useState(agent.version ?? 1);
+  const initialReason = pick?.reasonNote ?? agent.reason_hint;
+  const [reason, setReason] = useState(initialReason);
+  const [baseline, setBaseline] = useState(initialReason);
+  const [pickVersion, setPickVersion] = useState<number>(pick?.version ?? 0);
   const [state, setState] = useState<SaveState>({ kind: "idle" });
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const panelId = useId();
 
-  const dirty = reason !== agent.reason_hint && reason.trim().length > 0;
+  const dirty = reason.trim() !== baseline.trim() && reason.trim().length > 0;
 
   function save() {
     startTransition(async () => {
       setState({ kind: "saving" });
-      const res = await updateAgentAction({
-        id: agent.id,
-        expected_version: version,
-        patch: { reason_hint: reason.trim() },
+      const res = await saveReasonNoteAction({
+        lead_public_id: leadPublicId,
+        agent_id: agent.id,
+        reason_note: reason,
+        expected_version: pickVersion,
       });
       if (res.ok) {
-        setVersion(res.data.version);
+        setPickVersion(res.data.version);
+        setBaseline(reason);
         setState({ kind: "saved" });
         return;
       }
@@ -61,13 +84,18 @@ export function AgentRow({ agent, picked, onToggle }: AgentRowProps) {
         setState({ kind: "conflict", latestVersion: res.latest_version });
         return;
       }
-      if (res.code === "forbidden" || res.code === "unauthenticated" || res.code === "inactive") {
-        setState({ kind: "error", message: "You can't edit this agent." });
+      if (
+        res.code === "forbidden" ||
+        res.code === "unauthenticated" ||
+        res.code === "inactive"
+      ) {
+        setState({ kind: "error", message: "You can't edit this pick." });
         return;
       }
       setState({
         kind: "error",
-        message: res.code === "validation" ? "Reason too long or empty." : "Save failed.",
+        message:
+          res.code === "validation" ? "Reason is too long." : "Save failed.",
       });
     });
   }
@@ -144,8 +172,13 @@ export function AgentRow({ agent, picked, onToggle }: AgentRowProps) {
         <div>
           <div className="px-4 pb-4 pt-1 flex flex-col gap-3 border-t">
             <label className="flex flex-col gap-1">
-              <span className="t-caption text-text-muted">
+              <span className="t-caption text-text-muted flex items-center gap-2">
                 Reason for vendor
+                {pickVersion === 0 ? (
+                  <span className="chip chip-neutral t-caption">
+                    prefilled from template
+                  </span>
+                ) : null}
               </span>
               <textarea
                 value={reason}

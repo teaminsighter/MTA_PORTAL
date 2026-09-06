@@ -5,12 +5,12 @@ import Link from "next/link";
 import { BarChart3, Send, UserPlus } from "lucide-react";
 import type {
   ActivityEvent,
-  Agent,
   AgentCandidate,
   Comparable,
   Lead,
   PropertyFacts,
 } from "@/lib/mock";
+import type { ShortlistEntry } from "@/lib/repo/agents";
 import { AgentRow } from "@/components/lead/AgentRow";
 import { CandidateRow } from "@/components/lead/CandidateRow";
 import { CompactTimeline } from "@/components/lead/CompactTimeline";
@@ -28,7 +28,7 @@ interface Props {
   lead: Lead;
   property: PropertyFacts | null;
   comps: Comparable[];
-  shortlist: Agent[];
+  shortlist: ShortlistEntry[];
   candidates: AgentCandidate[];
   activity: ActivityEvent[];
 }
@@ -44,7 +44,16 @@ export default function LeadWorkspace({
   activity,
 }: Props) {
   const [picks, setPicks] = useState<Set<string>>(
-    new Set(shortlist.slice(0, 3).map((a) => a.id))
+    // Client-side pick toggle. Persistence of the "picked" flag itself
+    // lands in Phase 5; for now, agents that already have a pick row
+    // (a saved reason) default to picked, otherwise top 3 by nearby_sales.
+    () => {
+      const seeded = new Set(
+        shortlist.filter((e) => e.pick !== null).map((e) => e.agent.id)
+      );
+      if (seeded.size > 0) return seeded;
+      return new Set(shortlist.slice(0, 3).map((e) => e.agent.id));
+    }
   );
   const [tab, setTab] = useState<MobileTab>("property");
   const [railCollapsed, setRailCollapsed] = useState(false);
@@ -55,8 +64,8 @@ export default function LeadWorkspace({
   // Picked agents float to the top so the send preview matches reading order.
   const orderedShortlist = useMemo(() => {
     return [...shortlist].sort((a, b) => {
-      const aPicked = picks.has(a.id) ? 0 : 1;
-      const bPicked = picks.has(b.id) ? 0 : 1;
+      const aPicked = picks.has(a.agent.id) ? 0 : 1;
+      const bPicked = picks.has(b.agent.id) ? 0 : 1;
       return aPicked - bPicked;
     });
   }, [shortlist, picks]);
@@ -173,11 +182,13 @@ export default function LeadWorkspace({
               />
             ) : (
               <div className="flex flex-col gap-2 anim-stagger">
-                {orderedShortlist.map((a) => (
+                {orderedShortlist.map((entry) => (
                   <AgentRow
-                    key={a.id}
-                    agent={a}
-                    picked={picks.has(a.id)}
+                    key={entry.agent.id}
+                    leadPublicId={lead.id}
+                    agent={entry.agent}
+                    pick={entry.pick}
+                    picked={picks.has(entry.agent.id)}
                     onToggle={toggle}
                   />
                 ))}

@@ -194,6 +194,41 @@ for (const o of outcomes) {
   );
 }
 
+/*
+ * lead_agent_picks — pre-seeded picks for the demo lead so the workspace
+ * shows saved reason_notes (with their own version) out of the box.
+ * The chosen agents mirror the client-side default (top 3 signed/verbal
+ * by nearby_sales) so the workspace's "picked-to-top" ordering is
+ * consistent whether or not you're signed in yet.
+ */
+const demoLeadPublicId = "MTA-2026-00421";
+const demoLeadPk = leadPkByPublic.get(demoLeadPublicId);
+if (demoLeadPk) {
+  const demoPicks = [
+    {
+      agent_id: "AG-1001",
+      reason:
+        "Nicola has closed 3 comparable Ponsonby villas in the last quarter at 6–8% over CV.",
+    },
+    {
+      agent_id: "AG-1005",
+      reason:
+        "Anna's private-treaty rolodex covers Remuera vendors your address will resonate with.",
+    },
+    {
+      agent_id: "AG-1013",
+      reason:
+        "Hamish gets stronger CV-plus results on similar-era homes; useful counterpoint to auction pitches.",
+    },
+  ];
+  for (let i = 0; i < demoPicks.length; i++) {
+    const p = demoPicks[i];
+    stmts.push(
+      `INSERT OR REPLACE INTO lead_agent_picks (id, lead_id, agent_id, reason_note, display_order, picked_by, picked_at, unpicked_at, version) VALUES (${lit(`pick_seed_${i}`)}, ${lit(demoLeadPk)}, ${lit(p.agent_id)}, ${lit(p.reason)}, ${lit(i)}, ${lit("seed")}, ${lit(NOW)}, NULL, 1);`
+    );
+  }
+}
+
 // Audit log rows synthesised from the mock activity per lead, so the
 // workspace Timeline has content sourced from the real table.
 for (const [publicId, events] of Object.entries(activity)) {
