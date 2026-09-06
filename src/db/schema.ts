@@ -41,7 +41,15 @@ export const LEAD_STATES = [
   "sold",
 ] as const;
 
-export const LEAD_SOURCES = ["web", "ac_import", "ac_manual"] as const;
+export const LEAD_SOURCES = [
+  "web",
+  "ac_import",
+  "ac_manual",
+  // Historical lead rows synthesised by the local seed script so
+  // outcomes referencing pre-portal AC leads have a valid FK target.
+  // Filtered out of the default inbox and admin lists by the repo.
+  "seed_placeholder",
+] as const;
 
 export const MEMBERSHIP_STATUSES = [
   "signed",
@@ -159,7 +167,7 @@ export const leads = sqliteTable(
     index("leads_created_at_idx").on(t.created_at),
     check(
       "leads_source_check",
-      sql`${t.source} IN ('web', 'ac_import', 'ac_manual')`
+      sql`${t.source} IN ('web','ac_import','ac_manual','seed_placeholder')`
     ),
     check(
       "leads_state_check",

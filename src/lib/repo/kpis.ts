@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, eq, gte, sum } from "drizzle-orm";
+import { and, eq, gte, ne, sum } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import {
   dispatch_jobs,
@@ -29,7 +29,12 @@ export async function computeKpis(): Promise<Kpis> {
       db
         .select({ id: leadsTable.id })
         .from(leadsTable)
-        .where(gte(leadsTable.created_at, startIso)),
+        .where(
+          and(
+            gte(leadsTable.created_at, startIso),
+            ne(leadsTable.source, "seed_placeholder")
+          )
+        ),
       db
         .select({ id: dispatch_jobs.id })
         .from(dispatch_jobs)

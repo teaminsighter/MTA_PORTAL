@@ -1,9 +1,19 @@
 import "server-only";
 
-import { asc, desc, eq } from "drizzle-orm";
+import { desc, eq, ne } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { leads as leadsTable } from "@/db/schema";
 import type { Lead } from "@/lib/mock";
+
+/*
+ * `seed_placeholder` leads are synthesised by the local seed script to
+ * anchor historical outcome rows to a valid FK. They aren't real work
+ * and shouldn't show in the inbox / admin lists by default. Callers
+ * can opt in with { includePlaceholders: true }.
+ */
+interface ListOpts {
+  includePlaceholders?: boolean;
+}
 
 /* Row → UI type. Kept close to the queries so any schema drift breaks here. */
 function toLead(row: typeof leadsTable.$inferSelect): Lead {
@@ -19,11 +29,13 @@ function toLead(row: typeof leadsTable.$inferSelect): Lead {
   };
 }
 
-export async function listLeads(): Promise<Lead[]> {
-  const rows = await getDb()
-    .select()
-    .from(leadsTable)
-    .orderBy(desc(leadsTable.created_at));
+export async function listLeads(opts: ListOpts = {}): Promise<Lead[]> {
+  const q = getDb().select().from(leadsTable);
+  const rows = opts.includePlaceholders
+    ? await q.orderBy(desc(leadsTable.created_at))
+    : await q
+        .where(ne(leadsTable.source, "seed_placeholder"))
+        .orderBy(desc(leadsTable.created_at));
   return rows.map(toLead);
 }
 
@@ -46,11 +58,16 @@ export async function getLeadRowId(publicId: string): Promise<string | null> {
   return row?.id ?? null;
 }
 
-export async function listRecentLeads(limit = 6): Promise<Lead[]> {
-  const rows = await getDb()
-    .select()
-    .from(leadsTable)
-    .orderBy(desc(leadsTable.created_at))
-    .limit(limit);
+export async function listRecentLeads(
+  limit = 6,
+  opts: ListOpts = {}
+): Promise<Lead[]> {
+  const q = getDb().select().from(leadsTable);
+  const rows = opts.includePlaceholders
+    ? await q.orderBy(desc(leadsTable.created_at)).limit(limit)
+    : await q
+        .where(ne(leadsTable.source, "seed_placeholder"))
+        .orderBy(desc(leadsTable.created_at))
+        .limit(limit);
   return rows.map(toLead);
 }

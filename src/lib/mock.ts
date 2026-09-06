@@ -24,7 +24,11 @@ export type LeadState =
   | "sold"
   | "empty_workspace";
 
-export type LeadSource = "web" | "ac_import" | "ac_manual";
+export type LeadSource =
+  | "web"
+  | "ac_import"
+  | "ac_manual"
+  | "seed_placeholder";
 
 export interface Lead {
   id: string;

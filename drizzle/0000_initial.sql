@@ -201,7 +201,7 @@ CREATE TABLE `leads` (
 	`created_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	`webhook_idempotency_key` text,
-	CONSTRAINT "leads_source_check" CHECK("leads"."source" IN ('web', 'ac_import', 'ac_manual')),
+	CONSTRAINT "leads_source_check" CHECK("leads"."source" IN ('web','ac_import','ac_manual','seed_placeholder')),
 	CONSTRAINT "leads_state_check" CHECK("leads"."state" IN ('received','enriching','ready_for_review','dispatching','sent','partial_send','awaiting_agent_responses','agent_appointed','listed','sold'))
 );
 --> statement-breakpoint

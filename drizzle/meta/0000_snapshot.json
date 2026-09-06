@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "8aeb41cd-2ba8-4841-8bae-917527cdd03f",
+  "id": "2e96ebd1-13d8-4e4f-8ec6-dd0f27717f93",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ac_sync_map": {
@@ -1478,7 +1478,7 @@
       "checkConstraints": {
         "leads_source_check": {
           "name": "leads_source_check",
-          "value": "\"leads\".\"source\" IN ('web', 'ac_import', 'ac_manual')"
+          "value": "\"leads\".\"source\" IN ('web','ac_import','ac_manual','seed_placeholder')"
         },
         "leads_state_check": {
           "name": "leads_state_check",
