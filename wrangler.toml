@@ -1,0 +1,65 @@
+# ------------------------------------------------------------------
+# MTA Consultant Portal — Cloudflare / OpenNext configuration
+#
+# Three environments: local, staging, production.
+# Each env has its own D1 database.
+#
+# Naming convention: the wrangler `binding` key is what our code reads
+# (env.DB), so we keep it identical across environments. The
+# `database_name` and `database_id` are the Cloudflare-account-level
+# identifiers, and DIFFER per env — that's where "each env has its own
+# D1 binding" is realised.
+#
+# For local dev, miniflare creates a SQLite file under .wrangler/state
+# the first time `wrangler d1 execute DB --local` runs. Zero setup.
+# Staging / production database_ids get filled in later, when Sean's
+# Cloudflare account exists and we run `wrangler d1 create`.
+# ------------------------------------------------------------------
+
+name = "mta-portal"
+main = ".open-next/worker.js"
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Assets: OpenNext emits the Next.js static bundle here.
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# ------------------------------------------------------------------
+# LOCAL (default env when running `wrangler d1 --local ...`)
+# ------------------------------------------------------------------
+[env.local]
+name = "mta-portal-local"
+
+[[env.local.d1_databases]]
+binding = "DB"
+database_name = "mta-portal-local"
+# Placeholder UUID — miniflare ignores the id for --local execution.
+database_id = "00000000-0000-0000-0000-000000000001"
+
+# ------------------------------------------------------------------
+# STAGING (deploy: `wrangler deploy --env staging`)
+# ------------------------------------------------------------------
+[env.staging]
+name = "mta-portal-staging"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "mta-portal-staging"
+# TODO(phase-1-deploy): replace with the id printed by
+#   `wrangler d1 create mta-portal-staging`.
+database_id = "TODO_STAGING_D1_ID"
+
+# ------------------------------------------------------------------
+# PRODUCTION (deploy: `wrangler deploy --env production`)
+# ------------------------------------------------------------------
+[env.production]
+name = "mta-portal-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "mta-portal-production"
+# TODO(phase-1-deploy): replace with the id printed by
+#   `wrangler d1 create mta-portal-production`.
+database_id = "TODO_PRODUCTION_D1_ID"

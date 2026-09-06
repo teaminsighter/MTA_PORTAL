@@ -1,3 +1,6 @@
 allowBuilds:
+  # esbuild + workerd are required by wrangler/miniflare and @opennextjs/cloudflare.
+  esbuild: true
   sharp: false
   unrs-resolver: false
+  workerd: true
