@@ -1,7 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getComparables, getLead, getProperty } from "@/lib/mock";
+import { getLead } from "@/lib/repo/leads";
+import { getPropertyForLead } from "@/lib/repo/properties";
+import { listComparablesForLead } from "@/lib/repo/comparables";
 import { formatDateNZ, formatMoneyNZ } from "@/lib/utils";
 
 interface Props {
@@ -25,11 +29,12 @@ function pctBar(value: number, max: number): number {
 
 export default async function ComparePage({ params }: Props) {
   const { id } = await params;
-  const lead = getLead(id);
+  const [lead, property, comps] = await Promise.all([
+    getLead(id),
+    getPropertyForLead(id),
+    listComparablesForLead(id),
+  ]);
   if (!lead) notFound();
-
-  const property = getProperty(id);
-  const comps = getComparables(id);
 
   const salePrices = comps.map((c) => c.sale_price);
   const cvAtSales = comps.map((c) => c.cv_at_sale);

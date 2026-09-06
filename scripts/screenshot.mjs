@@ -28,6 +28,9 @@ try {
     const ctx = await browser.newContext({
       viewport: { width: vp.width, height: vp.height },
       deviceScaleFactor: vp.deviceScaleFactor,
+      // Force reduced motion so staggered entrance / spring animations
+      // don't leave elements mid-transition when we snap the frame.
+      reducedMotion: "reduce",
     });
     const page = await ctx.newPage();
     for (const r of routes) {
@@ -38,8 +41,9 @@ try {
         console.log(`FAIL (status ${res?.status()})`);
         continue;
       }
-      // small settle for fonts/shadows
-      await page.waitForTimeout(300);
+      // Wait for staggered card entrance to settle (worst case ~480ms) plus a
+      // margin for font swap so the screenshot captures the final layout.
+      await page.waitForTimeout(700);
       const file = resolve(outDir, `${r.name}-${vp.label}.png`);
       await page.screenshot({ path: file, fullPage: true });
       console.log("ok");

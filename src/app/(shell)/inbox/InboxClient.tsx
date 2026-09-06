@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, Filter, Inbox as InboxIcon } from "lucide-react";
-import { leads } from "@/lib/mock";
+import type { Lead } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
 import { StateChip } from "@/components/lead/StateChip";
 import { EmptyState } from "@/components/states/EmptyState";
@@ -43,15 +43,21 @@ function matchesFilter(state: string, f: FilterKey): boolean {
   return true;
 }
 
-export default function InboxClient() {
+interface InboxClientProps {
+  initialLeads: Lead[];
+}
+
+export default function InboxClient({ initialLeads }: InboxClientProps) {
   const search = useSearchParams();
   const demoState = search.get("state"); // "empty" | "error" | "loading" | null
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
-  const [selectedId, setSelectedId] = useState<string>(leads[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState<string>(
+    initialLeads[0]?.id ?? ""
+  );
 
   const filtered = useMemo(
-    () => leads.filter((l) => matchesFilter(l.state, activeFilter)),
-    [activeFilter]
+    () => initialLeads.filter((l) => matchesFilter(l.state, activeFilter)),
+    [initialLeads, activeFilter]
   );
 
   const selected = filtered.find((l) => l.id === selectedId) ?? filtered[0];

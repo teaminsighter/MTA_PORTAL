@@ -1,10 +1,14 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import InboxClient from "./InboxClient";
+import { listLeads } from "@/lib/repo/leads";
 
-export default function InboxPage() {
+export default async function InboxPage() {
+  const leads = await listLeads();
   return (
     <Suspense fallback={null}>
-      <InboxClient />
+      <InboxClient initialLeads={leads} />
     </Suspense>
   );
 }

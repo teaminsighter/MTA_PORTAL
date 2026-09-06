@@ -40,6 +40,9 @@ yarn-error.log*
 .wrangler/
 .open-next/
 
+# generated seed SQL — regenerate with `pnpm db:seed:local`
+drizzle/seed.sql
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

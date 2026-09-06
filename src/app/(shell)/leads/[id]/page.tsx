@@ -1,13 +1,13 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import LeadWorkspace from "./LeadWorkspace";
-import {
-  getActivity,
-  getCandidatesForLead,
-  getComparables,
-  getLead,
-  getProperty,
-  getShortlistForLead,
-} from "@/lib/mock";
+import { getLead } from "@/lib/repo/leads";
+import { getPropertyForLead } from "@/lib/repo/properties";
+import { listComparablesForLead } from "@/lib/repo/comparables";
+import { getShortlistForLead } from "@/lib/repo/agents";
+import { listCandidatesForLead } from "@/lib/repo/candidates";
+import { listActivityForLead } from "@/lib/repo/activity";
 
 interface LeadPageProps {
   params: Promise<{ id: string }>;
@@ -15,19 +15,21 @@ interface LeadPageProps {
 
 export default async function LeadPage({ params }: LeadPageProps) {
   const { id } = await params;
-  const lead = getLead(id);
+  const [lead, property, comps, shortlist, candidates, activity] =
+    await Promise.all([
+      getLead(id),
+      getPropertyForLead(id),
+      listComparablesForLead(id),
+      getShortlistForLead(id),
+      listCandidatesForLead(id),
+      listActivityForLead(id),
+    ]);
   if (!lead) notFound();
-
-  const property = getProperty(id);
-  const comps = getComparables(id);
-  const shortlist = getShortlistForLead(id);
-  const candidates = getCandidatesForLead(id);
-  const activity = getActivity(id);
 
   return (
     <LeadWorkspace
       lead={lead}
-      property={property ?? null}
+      property={property}
       comps={comps}
       shortlist={shortlist}
       candidates={candidates}

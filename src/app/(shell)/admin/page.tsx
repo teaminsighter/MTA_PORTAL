@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import {
   Activity,
   AlertOctagon,
@@ -11,7 +13,10 @@ import {
 import { KpiTile } from "@/components/admin/KpiTile";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { StateChip } from "@/components/lead/StateChip";
-import { kpis, leads, outcomes } from "@/lib/mock";
+import { computeKpis } from "@/lib/repo/kpis";
+import { listRecentLeads } from "@/lib/repo/leads";
+import { listRecentOutcomes } from "@/lib/repo/outcomes";
+import { countSignedAgents } from "@/lib/repo/agents";
 import { formatDateNZ, formatMoneyNZ, formatRelative } from "@/lib/utils";
 
 interface OutcomeRow {
@@ -60,30 +65,31 @@ const syncConflictRows: SyncConflictRow[] = [
   },
 ];
 
-const dispatchJobRows: DispatchJobRow[] = leads
-  .filter((l) =>
-    ["dispatching", "partial_send", "awaiting_agent_responses"].includes(l.state)
-  )
-  .map((l, i) => ({
-    id: `DJ-${1200 + i}`,
-    lead_id: l.id,
-    status:
-      l.state === "partial_send"
-        ? "failed_retry"
-        : l.state === "dispatching"
-        ? "locked"
-        : "sent",
-    attempts: l.state === "partial_send" ? 3 : 1,
-    next_attempt_at:
-      l.state === "partial_send"
-        ? "2026-09-05T03:00:00Z"
-        : "2026-09-05T02:30:00Z",
-  }));
-
-const outcomeRows: OutcomeRow[] = outcomes.slice(0, 12).map((o, i) => ({
-  id: `${o.lead_id}-${i}`,
-  ...o,
-}));
+// Synthetic display data for Phase 1. Will be replaced by
+// listDispatchJobs() from a dispatch repo when Phase 6 lands.
+const dispatchJobRows: DispatchJobRow[] = [
+  {
+    id: "DJ-1200",
+    lead_id: "MTA-2026-00419",
+    status: "locked",
+    attempts: 1,
+    next_attempt_at: "2026-09-05T02:30:00Z",
+  },
+  {
+    id: "DJ-1201",
+    lead_id: "MTA-2026-00415",
+    status: "failed_retry",
+    attempts: 3,
+    next_attempt_at: "2026-09-05T03:00:00Z",
+  },
+  {
+    id: "DJ-1202",
+    lead_id: "MTA-2026-00413",
+    status: "sent",
+    attempts: 1,
+    next_attempt_at: "2026-09-05T02:30:00Z",
+  },
+];
 
 const outcomeColumns: Column<OutcomeRow>[] = [
   { key: "lead_id", header: "Lead", render: (r) => r.lead_id },
@@ -174,15 +180,32 @@ const dispatchJobColumns: Column<DispatchJobRow>[] = [
   },
 ];
 
-const recentLeads = leads.slice(0, 6);
+export default async function AdminPage() {
+  const [kpis, recentLeads, outcomes, signedAgents] = await Promise.all([
+    computeKpis(),
+    listRecentLeads(6),
+    listRecentOutcomes(12),
+    countSignedAgents(),
+  ]);
 
-export default function AdminPage() {
+  const outcomeRows: OutcomeRow[] = outcomes.map((o, i) => ({
+    id: `${o.lead_id}-${i}`,
+    ...o,
+  }));
+
   return (
     <div className="flex flex-col gap-6">
       <header className="flex items-baseline justify-between gap-3 flex-wrap">
         <h1 className="t-display">Admin</h1>
         <span className="t-caption text-text-muted">
-          Canary <span className={`chip chip-${kpis.canary_status === "green" ? "success" : "danger"}`}>{kpis.canary_status}</span>
+          Canary{" "}
+          <span
+            className={`chip chip-${
+              kpis.canary_status === "green" ? "success" : "danger"
+            }`}
+          >
+            {kpis.canary_status}
+          </span>
         </span>
       </header>
 
@@ -191,20 +214,26 @@ export default function AdminPage() {
         <KpiTile
           label="Leads this month"
           value={kpis.leads_this_month.toLocaleString("en-NZ")}
-          delta="+18% vs last"
+          delta="vs last month"
           tone="success"
           icon={<Inbox size={14} />}
         />
         <KpiTile
           label="Avg. time to send"
-          value={`${kpis.avg_time_to_send_min} min`}
+          value={
+            kpis.avg_time_to_send_min > 0
+              ? `${kpis.avg_time_to_send_min} min`
+              : "—"
+          }
           delta="target 5–6 min"
           tone="warning"
           icon={<Clock3 size={14} />}
         />
         <KpiTile
           label="Agent acceptance"
-          value={`${kpis.agent_acceptance_pct}%`}
+          value={
+            kpis.agent_acceptance_pct > 0 ? `${kpis.agent_acceptance_pct}%` : "—"
+          }
           tone="success"
           icon={<CheckCircle size={14} />}
         />
@@ -228,7 +257,7 @@ export default function AdminPage() {
         />
         <KpiTile
           label="Signed agents"
-          value="16"
+          value={signedAgents.toString()}
           tone="neutral"
           icon={<Users size={14} />}
         />
