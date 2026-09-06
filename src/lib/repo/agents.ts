@@ -20,6 +20,7 @@ function toAgent(row: Row): Agent {
     avg_days_on_market: row.avg_days_on_market,
     nearby_sales: row.nearby_sales,
     reason_hint: row.reason_hint ?? "",
+    version: row.version,
   };
 }
 

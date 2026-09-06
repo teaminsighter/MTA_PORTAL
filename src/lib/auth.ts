@@ -38,7 +38,12 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     }),
   ],
 
-  session: { strategy: "jwt" },
+  // 8h JWT lifetime. Short enough that a compromised cookie stops working
+  // by the end of the working day; long enough that Sarah doesn't re-auth
+  // mid-shift. The role guard (src/lib/auth/guard.ts) also re-reads role +
+  // active from the users table on every mutation, so any demote /
+  // deactivate takes effect immediately regardless of JWT age.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 8 },
   trustHost: true,
 
   pages: {

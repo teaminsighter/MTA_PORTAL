@@ -85,6 +85,12 @@ export interface Agent {
   avg_days_on_market: number;
   nearby_sales: number;
   reason_hint: string;
+  /**
+   * DB row version. Present on records read from D1; used by server
+   * actions for optimistic-concurrency updates. Optional so mock
+   * fixtures without version tracking still type-check.
+   */
+  version?: number;
 }
 
 export interface AgentCandidate {
