@@ -1,0 +1,39 @@
+# -----------------------------------------------------------------------------
+# MTA Portal — local dev secrets template.
+#
+# Copy to `.dev.vars` (gitignored) and fill in real values. Loaded by wrangler
+# / miniflare for `pnpm dev`. Never commit `.dev.vars`.
+#
+# For staging/production, set secrets via `pnpm wrangler secret put NAME
+# --env staging` (or production).
+# -----------------------------------------------------------------------------
+
+# Auth.js — required for sign-in to work
+AUTH_SECRET=change-me-32-random-bytes-base64
+AUTH_GOOGLE_ID=your-google-oauth-client-id.apps.googleusercontent.com
+AUTH_GOOGLE_SECRET=your-google-oauth-client-secret
+
+# Sender identity (Postmark / TransmitSMS) — placeholders for now,
+# wired in Phase 6. Set to insighter.digital values during build/test;
+# swap to mytopagent values on the client's account.
+# POSTMARK_SERVER_TOKEN=
+# POSTMARK_FROM_EMAIL=noreply@insighter.digital
+# POSTMARK_FROM_NAME="MTA Portal (dev)"
+# POSTMARK_MESSAGE_STREAM=outbound
+# TRANSMITSMS_API_KEY=
+# TRANSMITSMS_API_SECRET=
+# TRANSMITSMS_SENDER_ID=
+
+# ActiveCampaign — Phase 2
+# AC_API_URL=
+# AC_API_KEY=
+# AC_WEBHOOK_SECRET=
+# AC_PIPELINE_ID=
+# AC_FIELD_D1_LEAD_ID=
+
+# Cotality — Phase 4
+# COTALITY_API_KEY=
+
+# Seed override (defaults: teaminsighter@gmail.com / Imran Hossain)
+# SEED_ADMIN_EMAIL=
+# SEED_ADMIN_NAME=
