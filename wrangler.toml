@@ -37,6 +37,7 @@ binding = "DB"
 database_name = "mta-portal-local"
 # Placeholder UUID — miniflare ignores the id for --local execution.
 database_id = "00000000-0000-0000-0000-000000000001"
+migrations_dir = "drizzle"
 
 # ------------------------------------------------------------------
 # STAGING (deploy: `wrangler deploy --env staging`)
@@ -50,6 +51,7 @@ database_name = "mta-portal-staging"
 # TODO(phase-1-deploy): replace with the id printed by
 #   `wrangler d1 create mta-portal-staging`.
 database_id = "TODO_STAGING_D1_ID"
+migrations_dir = "drizzle"
 
 # ------------------------------------------------------------------
 # PRODUCTION (deploy: `wrangler deploy --env production`)
@@ -63,3 +65,4 @@ database_name = "mta-portal-production"
 # TODO(phase-1-deploy): replace with the id printed by
 #   `wrangler d1 create mta-portal-production`.
 database_id = "TODO_PRODUCTION_D1_ID"
+migrations_dir = "drizzle"

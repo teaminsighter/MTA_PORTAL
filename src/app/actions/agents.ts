@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getDb } from "@/db/client";
 import { agents, MEMBERSHIP_STATUSES } from "@/db/schema";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
+import { logAudit } from "@/lib/audit";
 import type { Agent } from "@/lib/mock";
 
 /*
@@ -141,6 +142,14 @@ export async function createAgentAction(
     .where(eq(agents.id, id))
     .limit(1);
 
+  await logAudit({
+    action: "agent.create",
+    actor_user_id: guard.actor.id,
+    entity_type: "agent",
+    entity_id: id,
+    after: parsed.data,
+  });
+
   revalidatePath("/leads/[id]", "page");
   return { ok: true, data: { agent: toAgent(row), version: row.version } };
 }
@@ -190,6 +199,15 @@ export async function updateAgentAction(
     return await conflictOrNotFound(db, parsed.data.id);
   }
 
+  await logAudit({
+    action: "agent.update",
+    actor_user_id: guard.actor.id,
+    entity_type: "agent",
+    entity_id: parsed.data.id,
+    before: { version: parsed.data.expected_version },
+    after: { version: result[0].version, patch: parsed.data.patch },
+  });
+
   revalidatePath("/leads/[id]", "page");
   return {
     ok: true,
@@ -228,6 +246,15 @@ export async function deactivateAgentAction(
   if (result.length === 0) {
     return await conflictOrNotFound(db, parsed.data.id);
   }
+
+  await logAudit({
+    action: "agent.deactivate",
+    actor_user_id: guard.actor.id,
+    entity_type: "agent",
+    entity_id: parsed.data.id,
+    before: { active: true, version: parsed.data.expected_version },
+    after: { active: false, version: result[0].version },
+  });
 
   revalidatePath("/leads/[id]", "page");
   revalidatePath("/admin");

@@ -5,6 +5,7 @@ import Google from "next-auth/providers/google";
 import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { users } from "@/db/schema";
+import { logAudit } from "@/lib/audit";
 
 /*
  * Auth.js (NextAuth v5) — Google-only, allowlist-gated.
@@ -58,12 +59,27 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
      * sign-in page via ?error=AccessDenied.
      */
     async signIn({ account, profile }) {
-      if (account?.provider !== "google") return false;
-
-      const email = profile?.email?.toLowerCase();
+      const email = profile?.email?.toLowerCase() ?? null;
       const emailVerified = (profile as { email_verified?: boolean } | null)
-        ?.email_verified;
-      if (!email || emailVerified !== true) return false;
+        ?.email_verified === true;
+
+      // Reject non-Google, unverified, or unknown-email cases. Log the
+      // rejection so a repeated attempt is visible in audit_log.
+      if (account?.provider !== "google" || !email || !emailVerified) {
+        await logAudit({
+          action: "auth.signin_rejected",
+          entity_type: "auth",
+          after: {
+            reason: !emailVerified
+              ? "email_not_verified"
+              : account?.provider !== "google"
+                ? "wrong_provider"
+                : "missing_email",
+            attempted_email: email,
+          },
+        });
+        return false;
+      }
 
       const [row] = await getDb()
         .select({
@@ -75,7 +91,25 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         .where(eq(users.email, email))
         .limit(1);
 
-      if (!row || !row.active) return false;
+      if (!row || !row.active) {
+        await logAudit({
+          action: "auth.signin_rejected",
+          entity_type: "auth",
+          after: {
+            reason: !row ? "not_in_allowlist" : "inactive",
+            attempted_email: email,
+          },
+        });
+        return false;
+      }
+
+      await logAudit({
+        action: "auth.signin",
+        actor_user_id: row.id,
+        entity_type: "user",
+        entity_id: row.id,
+        after: { email, role: row.role },
+      });
       return true;
     },
 

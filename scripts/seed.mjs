@@ -242,6 +242,32 @@ for (const [publicId, events] of Object.entries(activity)) {
   }
 }
 
+/*
+ * Feature flags — one row per switch. All off by default in local dev
+ * (fail-closed: an unset flag is treated as false by lib/flags). Naming
+ * follows the "<domain>.<capability>_enabled" / "<adapter>.enabled" /
+ * "<channel>.enabled" conventions documented in lib/flags.ts.
+ */
+const seedFlags = [
+  ["cotality.enabled", false, "Cotality property adapter (Phase 4)."],
+  ["sync.ac_in_enabled", false, "AC webhook → D1 sync-in (Phase 2)."],
+  ["sync.ac_out_enabled", false, "D1 → AC dispatcher outbound (Phase 2)."],
+  ["sms.enabled", false, "TransmitSMS agent SMS channel (Phase 6)."],
+  ["email.vendor_enabled", false, "Postmark vendor email (Phase 6)."],
+  ["email.agent_enabled", false, "Postmark agent email (Phase 6)."],
+];
+for (const [name, enabled, notes] of seedFlags) {
+  stmts.push(
+    `INSERT OR REPLACE INTO feature_flags (name, enabled, notes, updated_at) VALUES (${lit(name)}, ${lit(enabled)}, ${lit(notes)}, ${lit(NOW)});`
+  );
+}
+
+// system_health singleton — health endpoint reads last_cron_tick_at
+// from this row; crons (Phase 6+) bump it every tick.
+stmts.push(
+  `INSERT OR REPLACE INTO system_health (id, last_cron_tick_at, last_reconciler_run_at, updated_at) VALUES ('singleton', NULL, NULL, ${lit(NOW)});`
+);
+
 stmts.push("COMMIT;");
 
 writeFileSync(outFile, stmts.join("\n") + "\n", "utf8");

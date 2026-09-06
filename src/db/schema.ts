@@ -605,6 +605,35 @@ export const template_versions = sqliteTable(
 );
 
 /* ================================================================== */
+/* Feature flags + system health                                       */
+/*                                                                     */
+/* Flags are the on/off switches for adapters, sync directions, and    */
+/* notification channels (§11 rule 5). One row per flag, keyed by      */
+/* name. Read via lib/flags.isFlagEnabled().                           */
+/*                                                                     */
+/* system_health is a singleton row updated by the dispatcher cron     */
+/* and by the reconciler nightly job, so /api/health can report        */
+/* freshness without inventing per-job tables today.                   */
+/* ================================================================== */
+
+export const feature_flags = sqliteTable("feature_flags", {
+  name: text("name").primaryKey(),
+  enabled: integer("enabled", { mode: "boolean" }).notNull().default(false),
+  notes: text("notes"),
+  updated_at: text("updated_at").notNull().default(NOW),
+});
+
+export const system_health = sqliteTable("system_health", {
+  // Enforced singleton via a check constraint.
+  id: text("id").primaryKey(),
+  last_cron_tick_at: text("last_cron_tick_at"),
+  last_reconciler_run_at: text("last_reconciler_run_at"),
+  updated_at: text("updated_at").notNull().default(NOW),
+}, (t) => [
+  check("system_health_singleton", sql`${t.id} = 'singleton'`),
+]);
+
+/* ================================================================== */
 /* Audit                                                               */
 /* ================================================================== */
 

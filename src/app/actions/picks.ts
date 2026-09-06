@@ -7,6 +7,7 @@ import { getDb } from "@/db/client";
 import { lead_agent_picks } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
+import { logAudit } from "@/lib/audit";
 
 /*
  * Per-pick reason note.
@@ -71,6 +72,14 @@ export async function saveReasonNoteAction(
       .returning({ version: lead_agent_picks.version });
 
     if (inserted.length > 0) {
+      await logAudit({
+        action: "pick.reason_note_save",
+        actor_user_id: guard.actor.id,
+        entity_type: "lead_agent_pick",
+        entity_id: parsed.data.agent_id,
+        lead_id: leadRowId,
+        after: { version: inserted[0].version, created: true },
+      });
       revalidatePath("/leads/[id]", "page");
       return { ok: true, data: { version: inserted[0].version } };
     }
@@ -122,6 +131,16 @@ export async function saveReasonNoteAction(
     if (!row) return { ok: false, code: "not_found" };
     return { ok: false, code: "version_conflict", latest_version: row.version };
   }
+
+  await logAudit({
+    action: "pick.reason_note_save",
+    actor_user_id: guard.actor.id,
+    entity_type: "lead_agent_pick",
+    entity_id: parsed.data.agent_id,
+    lead_id: leadRowId,
+    before: { version: parsed.data.expected_version },
+    after: { version: result[0].version },
+  });
 
   revalidatePath("/leads/[id]", "page");
   return { ok: true, data: { version: result[0].version } };
