@@ -13,6 +13,11 @@ AUTH_SECRET=change-me-32-random-bytes-base64
 AUTH_GOOGLE_ID=your-google-oauth-client-id.apps.googleusercontent.com
 AUTH_GOOGLE_SECRET=your-google-oauth-client-secret
 
+# HMAC secret for the ingest webhook. Landing page signs the payload
+# with this and sends it in the X-MTA-Signature header. Rotate by
+# updating both ends. Generate: `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+WEBHOOK_HMAC_SECRET=change-me-32-random-bytes-base64
+
 # Sender identity (Postmark / TransmitSMS) — placeholders for now,
 # wired in Phase 6. Set to insighter.digital values during build/test;
 # swap to mytopagent values on the client's account.
