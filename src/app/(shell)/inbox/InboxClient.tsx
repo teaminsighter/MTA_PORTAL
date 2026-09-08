@@ -1,18 +1,48 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowRight, Filter, Inbox as InboxIcon } from "lucide-react";
-import type { Lead } from "@/lib/mock";
+import type { Lead, LeadState } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
 import { StateChip } from "@/components/lead/StateChip";
 import { EmptyState } from "@/components/states/EmptyState";
 import { ErrorState } from "@/components/states/ErrorState";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
 import { cn, formatRelative } from "@/lib/utils";
+import type { InboxResponse } from "@/app/api/inbox/route";
+import {
+  countUnread,
+  markInboxSeen,
+  useInbox,
+  useLastSeenAt,
+} from "@/lib/inbox/use-inbox";
 
-type FilterKey = "all" | "new" | "in_progress" | "sent" | "needs_attention";
+/*
+ * Inbox screen (client). SSR delivers the first payload via
+ * initialLeads; TanStack Query then polls /api/inbox every 15s and on
+ * window focus. The Sidebar badge subscribes to the same query key
+ * (["inbox"]) so it stays in lockstep with the list — no duplicate
+ * requests.
+ *
+ * Filter chips map §9 states into user-facing buckets. Filters run
+ * client-side on the polled dataset; the server always returns the
+ * top 50 recent regardless.
+ *
+ * "Unread" is a client-only concept: a lead is unread if its
+ * created_at is newer than the localStorage lastSeenAt timestamp.
+ * The timestamp is bumped when the inbox mounts (and on subsequent
+ * tab-focus events while on this page) so re-visiting from another
+ * screen resets the badge.
+ */
+
+type FilterKey =
+  | "all"
+  | "new"
+  | "in_progress"
+  | "sent"
+  | "needs_attention";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
@@ -22,25 +52,34 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "needs_attention", label: "Needs attention" },
 ];
 
-function matchesFilter(state: string, f: FilterKey): boolean {
-  if (f === "all") return true;
-  if (f === "new") return state === "received" || state === "empty_workspace";
-  if (f === "in_progress")
-    return (
-      state === "enriching" ||
-      state === "ready_for_review" ||
-      state === "dispatching" ||
-      state === "awaiting_agent_responses"
-    );
-  if (f === "sent")
-    return (
-      state === "sent" ||
-      state === "agent_appointed" ||
-      state === "listed" ||
-      state === "sold"
-    );
-  if (f === "needs_attention") return state === "partial_send";
-  return true;
+const NEW_STATES: LeadState[] = ["received", "empty_workspace"];
+const IN_PROGRESS_STATES: LeadState[] = [
+  "enriching",
+  "ready_for_review",
+  "dispatching",
+  "awaiting_agent_responses",
+];
+const SENT_STATES: LeadState[] = [
+  "sent",
+  "agent_appointed",
+  "listed",
+  "sold",
+];
+const NEEDS_ATTENTION_STATES: LeadState[] = ["partial_send"];
+
+function matchesFilter(state: LeadState, f: FilterKey): boolean {
+  switch (f) {
+    case "all":
+      return true;
+    case "new":
+      return NEW_STATES.includes(state);
+    case "in_progress":
+      return IN_PROGRESS_STATES.includes(state);
+    case "sent":
+      return SENT_STATES.includes(state);
+    case "needs_attention":
+      return NEEDS_ATTENTION_STATES.includes(state);
+  }
 }
 
 interface InboxClientProps {
@@ -55,9 +94,35 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
     initialLeads[0]?.id ?? ""
   );
 
+  // Prime the shared query cache with the SSR payload so the Sidebar
+  // badge has data on first paint. The by_state/total fields don't
+  // matter on the first render; the next poll fills them in.
+  const initialData: InboxResponse = useMemo(
+    () => ({
+      leads: initialLeads,
+      total: initialLeads.length,
+      by_state: {} as InboxResponse["by_state"],
+    }),
+    [initialLeads]
+  );
+
+  const inbox = useInbox(initialData);
+  const leads = inbox.data?.leads ?? initialLeads;
+
+  // Mark seen on mount + on any focus while on this page. The Sidebar
+  // badge (which reads the same lastSeen) drops to 0 immediately.
+  useEffect(() => {
+    markInboxSeen();
+    const onFocus = () => markInboxSeen();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, []);
+
+  const lastSeen = useLastSeenAt();
+
   const filtered = useMemo(
-    () => initialLeads.filter((l) => matchesFilter(l.state, activeFilter)),
-    [initialLeads, activeFilter]
+    () => leads.filter((l) => matchesFilter(l.state, activeFilter)),
+    [leads, activeFilter]
   );
 
   const selected = filtered.find((l) => l.id === selectedId) ?? filtered[0];
@@ -79,19 +144,26 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
 
         {/* Filters */}
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setActiveFilter(f.key)}
-              className={cn(
-                "chip",
-                activeFilter === f.key ? "chip-info" : "chip-neutral"
-              )}
-            >
-              {f.label}
-            </button>
-          ))}
+          {FILTERS.map((f) => {
+            const count =
+              f.key === "all"
+                ? leads.length
+                : leads.filter((l) => matchesFilter(l.state, f.key)).length;
+            return (
+              <button
+                key={f.key}
+                type="button"
+                onClick={() => setActiveFilter(f.key)}
+                className={cn(
+                  "chip",
+                  activeFilter === f.key ? "chip-info" : "chip-neutral"
+                )}
+              >
+                {f.label}{" "}
+                <span className="tabular opacity-70">{count}</span>
+              </button>
+            );
+          })}
         </div>
 
         {demoState === "loading" ? (
@@ -102,29 +174,56 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
             title="Nothing here yet"
             body="New leads will appear here within 90 seconds of submission."
           />
-        ) : demoState === "error" ? (
-          <ErrorState onRetry={() => window.location.reload()} />
+        ) : demoState === "error" || inbox.isError ? (
+          <ErrorState onRetry={() => inbox.refetch()} />
         ) : (
           <ul className="flex flex-col gap-3">
-            {filtered.map((lead) => (
-              <li key={lead.id}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(lead.id)}
-                  className="w-full text-left md:block"
-                  aria-current={selected?.id === lead.id ? "true" : undefined}
-                >
-                  <div className="hidden md:block">
-                    <LeadCard lead={lead} selected={selected?.id === lead.id} />
-                  </div>
-                  <div className="md:hidden">
-                    <LeadCard lead={lead} href={`/leads/${lead.id}`} />
-                  </div>
-                </button>
-              </li>
-            ))}
+            {filtered.map((lead) => {
+              const isUnread = lastSeen ? lead.created_at > lastSeen : false;
+              return (
+                <li key={lead.id}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(lead.id)}
+                    className="w-full text-left md:block"
+                    aria-current={
+                      selected?.id === lead.id ? "true" : undefined
+                    }
+                  >
+                    <div className="hidden md:block">
+                      <LeadCard
+                        lead={lead}
+                        selected={selected?.id === lead.id}
+                        unread={isUnread}
+                      />
+                    </div>
+                    <div className="md:hidden">
+                      <LeadCard
+                        lead={lead}
+                        href={`/leads/${lead.id}`}
+                        unread={isUnread}
+                      />
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
+
+        {inbox.data ? (
+          <div className="t-caption text-text-muted tabular pt-1">
+            {inbox.data.total} lead{inbox.data.total === 1 ? "" : "s"} total
+            {countUnread(leads, lastSeen) > 0 ? (
+              <>
+                {" · "}
+                <span className="text-accent font-semibold">
+                  {countUnread(leads, lastSeen)} new
+                </span>
+              </>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {/* Right pane — preview (desktop only) */}
@@ -150,8 +249,8 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
                   {selected.source === "web"
                     ? "Web form"
                     : selected.source === "ac_manual"
-                    ? "AC manual"
-                    : "AC import"}
+                      ? "AC manual"
+                      : "AC import"}
                 </div>
               </div>
               <div className="neu-inset-sm p-3">
