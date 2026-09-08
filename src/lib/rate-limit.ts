@@ -32,6 +32,14 @@ export function isRateLimited(
   return false;
 }
 
+/**
+ * Test-only: wipe all buckets. Called from `beforeEach` so per-test
+ * IPs don't leak across the suite.
+ */
+export function resetRateLimit(): void {
+  buckets.clear();
+}
+
 function sweep(now: number, windowMs: number): void {
   for (const [k, ts] of buckets) {
     const kept = ts.filter((t) => now - t < windowMs);

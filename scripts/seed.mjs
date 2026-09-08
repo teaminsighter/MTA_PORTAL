@@ -22,7 +22,10 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dirname, "..");
 const mockDir = resolve(root, "src/mock");
-const outDir = resolve(root, "drizzle");
+// Seed SQL lives outside drizzle/ so wrangler's `d1 migrations apply`
+// (which treats every .sql file in `migrations_dir` as a migration)
+// doesn't accidentally apply the seed as schema.
+const outDir = resolve(root, ".wrangler");
 mkdirSync(outDir, { recursive: true });
 const outFile = resolve(outDir, "seed.sql");
 
@@ -267,6 +270,28 @@ for (const [name, enabled, notes] of seedFlags) {
 stmts.push(
   `INSERT OR REPLACE INTO system_health (id, last_cron_tick_at, last_reconciler_run_at, updated_at) VALUES ('singleton', NULL, NULL, ${lit(NOW)});`
 );
+
+/*
+ * Initialise id_counters so the ingest webhook's counter-row lookup
+ * (nextD1LeadId) starts above the largest imported NNNNN in each
+ * year namespace. Without this, freshly-ingested leads would collide
+ * with historical seed_placeholder rows and hit the unique index.
+ */
+const maxByYear = new Map();
+for (const publicId of leadPkByPublic.keys()) {
+  const match = publicId.match(/^MTA-(\d{4})-(\d{5})$/);
+  if (!match) continue;
+  const [, year, n] = match;
+  const num = parseInt(n, 10);
+  if (!maxByYear.has(year) || maxByYear.get(year) < num) {
+    maxByYear.set(year, num);
+  }
+}
+for (const [year, max] of maxByYear) {
+  stmts.push(
+    `INSERT OR REPLACE INTO id_counters (key, value, updated_at) VALUES (${lit(`lead_seq_${year}`)}, ${max}, ${lit(NOW)});`
+  );
+}
 
 stmts.push("COMMIT;");
 

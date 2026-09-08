@@ -1,32 +1,46 @@
 import "server-only";
 
-import { desc, like } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
-import { leads } from "@/db/schema";
+import { id_counters } from "@/db/schema";
+import type { Db } from "@/db/client";
 
 /*
  * Next public lead reference in the shape MTA-YYYY-NNNNN.
  *
- * NNNNN is per-year, zero-padded, and monotonically increases within
- * the current UTC year. We scan for the current max in this year's
- * namespace and add one; the unique index on leads.d1_lead_id catches
- * concurrent collisions, and the caller (route handler) retries once.
+ * Uses a per-year counter row and D1's atomic
  *
- * Historical seed_placeholder rows sit in the same namespace so real
- * new leads land after the largest existing number — that's fine,
- * placeholders occupy the space they were imported into.
+ *   INSERT INTO id_counters (key, value)
+ *        VALUES (?, 1)
+ *   ON CONFLICT(key) DO UPDATE SET value = value + 1, updated_at = ?
+ *   RETURNING value
+ *
+ * so two concurrent callers can't ever get the same NNNNN — the whole
+ * increment-and-read is one statement, serialised by D1's writer.
+ * No SELECT MAX race.
+ *
+ * The seed script initialises `lead_seq_YYYY` to the highest imported
+ * NNNNN so freshly-ingested leads land above the historical range.
  */
-export async function nextD1LeadId(now = new Date()): Promise<string> {
+export async function nextD1LeadId(
+  now: Date = new Date(),
+  db: Db = getDb()
+): Promise<string> {
   const year = now.getUTCFullYear();
-  const prefix = `MTA-${year}-`;
-  const [row] = await getDb()
-    .select({ id: leads.d1_lead_id })
-    .from(leads)
-    .where(like(leads.d1_lead_id, `${prefix}%`))
-    .orderBy(desc(leads.d1_lead_id))
-    .limit(1);
-  const next = row
-    ? parseInt(row.id.slice(prefix.length), 10) + 1
-    : 1;
-  return `${prefix}${String(next).padStart(5, "0")}`;
+  const key = `lead_seq_${year}`;
+  const nowIso = now.toISOString();
+
+  const [row] = await db
+    .insert(id_counters)
+    .values({ key, value: 1, updated_at: nowIso })
+    .onConflictDoUpdate({
+      target: id_counters.key,
+      set: {
+        value: sql`${id_counters.value} + 1`,
+        updated_at: nowIso,
+      },
+    })
+    .returning({ value: id_counters.value });
+
+  return `MTA-${year}-${String(row.value).padStart(5, "0")}`;
 }

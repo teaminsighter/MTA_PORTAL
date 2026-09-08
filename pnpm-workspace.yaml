@@ -1,5 +1,7 @@
 allowBuilds:
   # esbuild + workerd are required by wrangler/miniflare and @opennextjs/cloudflare.
+  # better-sqlite3 is required by the vitest test harness (tests/helpers/db.ts).
+  better-sqlite3: true
   esbuild: true
   sharp: false
   unrs-resolver: false

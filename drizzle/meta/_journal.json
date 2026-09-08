@@ -15,6 +15,13 @@
       "when": 1788680744083,
       "tag": "0001_flags_and_health",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788760195376,
+      "tag": "0002_id_counters",
+      "breakpoints": true
     }
   ]
 }

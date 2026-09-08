@@ -623,6 +623,23 @@ export const feature_flags = sqliteTable("feature_flags", {
   updated_at: text("updated_at").notNull().default(NOW),
 });
 
+/*
+ * Sequential ID counters. One row per named sequence, e.g.
+ * `lead_seq_2026`. The ingest webhook increments and returns a new
+ * value atomically with `INSERT ... ON CONFLICT DO UPDATE SET value =
+ * value + 1 RETURNING value` — race-safe under any concurrency the
+ * D1 backend serialises for us, so no SELECT MAX pattern.
+ *
+ * Seed initialises the current-year counter to the max NNNNN across
+ * pre-existing leads so newly-ingested rows never collide with
+ * imported ones.
+ */
+export const id_counters = sqliteTable("id_counters", {
+  key: text("key").primaryKey(),
+  value: integer("value").notNull().default(0),
+  updated_at: text("updated_at").notNull().default(NOW),
+});
+
 export const system_health = sqliteTable("system_health", {
   // Enforced singleton via a check constraint.
   id: text("id").primaryKey(),

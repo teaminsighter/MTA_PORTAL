@@ -1,14 +1,10 @@
-import leadsJson from "@/mock/leads.json";
-import propertiesJson from "@/mock/properties.json";
-import comparablesJson from "@/mock/comparables.json";
-import agentsJson from "@/mock/agents.json";
-import agentCandidatesJson from "@/mock/agent_candidates.json";
-import outcomesJson from "@/mock/outcomes.json";
-import kpisJson from "@/mock/kpis.json";
-import activityJson from "@/mock/activity.json";
-
 /* ================================================================== */
-/* Types                                                              */
+/* Shared domain types.                                                */
+/*                                                                     */
+/* Historically this file also exported the mock JSON fixtures and    */
+/* helper loaders for the demo UI. The pages and components now read  */
+/* everything from src/lib/repo/* (D1-backed), so only the type        */
+/* exports remain. The seed script talks to src/mock/*.json directly.  */
 /* ================================================================== */
 
 export type LeadState =
@@ -139,50 +135,3 @@ export interface ActivityEvent {
   detail: string;
 }
 
-/* ================================================================== */
-/* Loaders                                                            */
-/* ================================================================== */
-
-export const leads = leadsJson as Lead[];
-export const properties = propertiesJson as Record<string, PropertyFacts>;
-export const comparables = comparablesJson as Record<string, Comparable[]>;
-export const agents = agentsJson as Agent[];
-export const agentCandidates = agentCandidatesJson as AgentCandidate[];
-export const outcomes = outcomesJson as Outcome[];
-export const kpis = kpisJson as Kpis;
-export const activity = activityJson as Record<string, ActivityEvent[]>;
-
-export function getLead(id: string): Lead | undefined {
-  return leads.find((l) => l.id === id);
-}
-
-export function getProperty(id: string): PropertyFacts | undefined {
-  return properties[id];
-}
-
-export function getComparables(id: string): Comparable[] {
-  return comparables[id] ?? [];
-}
-
-export function getActivity(id: string): ActivityEvent[] {
-  return activity[id] ?? [];
-}
-
-export function getCandidatesForLead(id: string): AgentCandidate[] {
-  return agentCandidates.filter((c) => c.first_seen_lead_id === id);
-}
-
-/**
- * Deterministic shortlist for demo — return the top 3 signed/verbally_agreed
- * agents ordered by nearby_sales.
- */
-export function getShortlistForLead(_id: string): Agent[] {
-  return [...agents]
-    .filter(
-      (a) =>
-        a.membership_status === "signed" ||
-        a.membership_status === "verbally_agreed"
-    )
-    .sort((a, b) => b.nearby_sales - a.nearby_sales)
-    .slice(0, 4);
-}
