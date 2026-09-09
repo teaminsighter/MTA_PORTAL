@@ -26,7 +26,29 @@ function toLead(row: typeof leadsTable.$inferSelect): Lead {
     state: row.state,
     source: row.source,
     created_at: row.created_at,
+    version: row.version,
   };
+}
+
+/** Public → internal id + row version, no full-row read. */
+export async function getLeadRow(publicId: string): Promise<
+  | {
+      id: string;
+      state: import("@/lib/leads/state").DbLeadState;
+      version: number;
+    }
+  | null
+> {
+  const [row] = await getDb()
+    .select({
+      id: leadsTable.id,
+      state: leadsTable.state,
+      version: leadsTable.version,
+    })
+    .from(leadsTable)
+    .where(eq(leadsTable.d1_lead_id, publicId))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function listLeads(opts: ListOpts = {}): Promise<Lead[]> {

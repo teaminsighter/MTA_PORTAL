@@ -35,6 +35,8 @@ export interface Lead {
   state: LeadState;
   source: LeadSource;
   created_at: string;
+  /** DB row version; present on records read from D1. */
+  version?: number;
 }
 
 export interface Provenance<T> {
