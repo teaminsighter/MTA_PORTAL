@@ -271,7 +271,7 @@ export default function LeadWorkspace({
                 <ul className="flex flex-col gap-2 anim-stagger">
                   {candidates.map((c) => (
                     <li key={c.id}>
-                      <CandidateRow candidate={c} />
+                      <CandidateRow leadPublicId={lead.id} candidate={c} />
                     </li>
                   ))}
                 </ul>

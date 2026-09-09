@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { agent_candidates as candidatesTable } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
@@ -21,6 +21,12 @@ function toCandidate(row: Row): AgentCandidate {
   };
 }
 
+/*
+ * Candidates the workspace should show: rows tied to this lead whose
+ * status is still worth a decision. `promoted` and `dismissed` are
+ * terminal — a promoted candidate is now an Agent shown in the
+ * shortlist; a dismissed one deliberately doesn't come back.
+ */
 export async function listCandidatesForLead(
   publicLeadId: string
 ): Promise<AgentCandidate[]> {
@@ -29,6 +35,11 @@ export async function listCandidatesForLead(
   const rows = await getDb()
     .select()
     .from(candidatesTable)
-    .where(eq(candidatesTable.first_seen_lead_id, rowId));
+    .where(
+      and(
+        eq(candidatesTable.first_seen_lead_id, rowId),
+        inArray(candidatesTable.status, ["new", "contacted"])
+      )
+    );
   return rows.map(toCandidate);
 }
