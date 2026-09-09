@@ -1,8 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { BarChart3, Send, UserPlus } from "lucide-react";
+import { pickAgentAction, unpickAgentAction } from "@/app/actions/picks";
 import type {
   ActivityEvent,
   AgentCandidate,
@@ -43,39 +45,102 @@ export default function LeadWorkspace({
   candidates,
   activity,
 }: Props) {
-  const [picks, setPicks] = useState<Set<string>>(
-    // Client-side pick toggle. Persistence of the "picked" flag itself
-    // lands in Phase 5; for now, agents that already have a pick row
-    // (a saved reason) default to picked, otherwise top 3 by nearby_sales.
-    () => {
-      const seeded = new Set(
-        shortlist.filter((e) => e.pick !== null).map((e) => e.agent.id)
-      );
-      if (seeded.size > 0) return seeded;
-      return new Set(shortlist.slice(0, 3).map((e) => e.agent.id));
-    }
-  );
   const [tab, setTab] = useState<MobileTab>("property");
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const router = useRouter();
+
+  /*
+   * Picks are now server-of-record on lead_agent_picks. The UI reads
+   * them off the ShortlistEntry.pick payload; useOptimistic bridges
+   * the click → server response gap so the tick and picked-to-top
+   * reorder land instantly. router.refresh() reconciles with the DB
+   * state after the action completes.
+   */
+  type PickAction =
+    | { kind: "pick"; agentId: string }
+    | { kind: "unpick"; agentId: string };
+
+  const [optimisticShortlist, applyPickOptimistic] = useOptimistic(
+    shortlist,
+    (state, action: PickAction) => {
+      return state.map((entry) => {
+        if (entry.agent.id !== action.agentId) return entry;
+        if (action.kind === "pick") {
+          return {
+            ...entry,
+            pick: entry.pick ?? {
+              reasonNote: "",
+              // Ephemeral version 0; the real one comes back from the
+              // server action and lands via router.refresh().
+              version: 0,
+              displayOrder: Number.MAX_SAFE_INTEGER,
+            },
+          };
+        }
+        return { ...entry, pick: null };
+      });
+    }
+  );
+  const [pickPending, startPickTransition] = useTransition();
 
   const isEmpty = lead.state === "empty_workspace";
-  const recipientCount = useMemo(() => picks.size, [picks]);
 
-  // Picked agents float to the top so the send preview matches reading order.
+  const recipientCount = useMemo(
+    () => optimisticShortlist.filter((e) => e.pick !== null).length,
+    [optimisticShortlist]
+  );
+
+  /*
+   * Picked-to-top ordering. Within picks, sort ascending by
+   * display_order so agents render in the sequence Sarah ticked them
+   * (matches lead_agent_picks.display_order and the eventual vendor
+   * email order). Unpicked agents keep the shortlist's default
+   * ordering (nearby_sales desc).
+   */
   const orderedShortlist = useMemo(() => {
-    return [...shortlist].sort((a, b) => {
-      const aPicked = picks.has(a.agent.id) ? 0 : 1;
-      const bPicked = picks.has(b.agent.id) ? 0 : 1;
-      return aPicked - bPicked;
+    return [...optimisticShortlist].sort((a, b) => {
+      const aPicked = a.pick !== null;
+      const bPicked = b.pick !== null;
+      if (aPicked && !bPicked) return -1;
+      if (!aPicked && bPicked) return 1;
+      if (aPicked && bPicked) {
+        return (a.pick?.displayOrder ?? 0) - (b.pick?.displayOrder ?? 0);
+      }
+      return 0;
     });
-  }, [shortlist, picks]);
+  }, [optimisticShortlist]);
 
-  function toggle(id: string) {
-    setPicks((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  function toggle(agentId: string) {
+    const entry = optimisticShortlist.find((e) => e.agent.id === agentId);
+    if (!entry) return;
+    const currentlyPicked = entry.pick !== null;
+
+    startPickTransition(async () => {
+      applyPickOptimistic({
+        kind: currentlyPicked ? "unpick" : "pick",
+        agentId,
+      });
+
+      const res = currentlyPicked
+        ? await unpickAgentAction({
+            lead_public_id: lead.id,
+            agent_id: agentId,
+            expected_version: entry.pick?.version ?? 1,
+          })
+        : await pickAgentAction({
+            lead_public_id: lead.id,
+            agent_id: agentId,
+          });
+
+      if (!res.ok && res.code === "version_conflict") {
+        // Someone else changed the pick between our read and click.
+        // Refresh drops the optimistic state and pulls the truth.
+        router.refresh();
+        return;
+      }
+      // Success or non-conflict error → refresh either way so the
+      // authoritative version + display_order come from the server.
+      router.refresh();
     });
   }
 
@@ -165,7 +230,9 @@ export default function LeadWorkspace({
             <div className="flex items-baseline justify-between">
               <h2 className="t-section">Shortlist</h2>
               <span className="t-caption text-text-muted tabular">
-                <span className="text-text font-semibold">{picks.size}</span>{" "}
+                <span className="text-text font-semibold">
+                  {recipientCount}
+                </span>{" "}
                 picked · {shortlist.length} suggested
               </span>
             </div>
@@ -183,7 +250,8 @@ export default function LeadWorkspace({
                     leadPublicId={lead.id}
                     agent={entry.agent}
                     pick={entry.pick}
-                    picked={picks.has(entry.agent.id)}
+                    picked={entry.pick !== null}
+                    togglePending={pickPending}
                     onToggle={toggle}
                   />
                 ))}

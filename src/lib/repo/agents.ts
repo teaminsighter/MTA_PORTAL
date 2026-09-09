@@ -34,6 +34,7 @@ function toAgent(row: Row): Agent {
 export interface PickInfo {
   reasonNote: string;
   version: number;
+  displayOrder: number;
 }
 export interface ShortlistEntry {
   agent: Agent;
@@ -66,6 +67,7 @@ export async function getShortlistForLead(
       agent: agentsTable,
       pickReason: lead_agent_picks.reason_note,
       pickVersion: lead_agent_picks.version,
+      pickDisplayOrder: lead_agent_picks.display_order,
       pickUnpickedAt: lead_agent_picks.unpicked_at,
     })
     .from(agentsTable)
@@ -96,7 +98,11 @@ export async function getShortlistForLead(
       r.pickVersion !== null &&
       r.pickVersion !== undefined &&
       !r.pickUnpickedAt
-        ? { reasonNote: r.pickReason ?? "", version: r.pickVersion }
+        ? {
+            reasonNote: r.pickReason ?? "",
+            version: r.pickVersion,
+            displayOrder: r.pickDisplayOrder ?? 0,
+          }
         : null,
   }));
 }

@@ -21,6 +21,8 @@ interface AgentRowProps {
   /** Existing lead_agent_picks row for (leadPublicId, agent.id), or null. */
   pick: PickInfo | null;
   picked: boolean;
+  /** Any pick action currently in flight in the parent. */
+  togglePending?: boolean;
   onToggle: (agentId: string) => void;
 }
 
@@ -51,6 +53,7 @@ export function AgentRow({
   agent,
   pick,
   picked,
+  togglePending,
   onToggle,
 }: AgentRowProps) {
   const [open, setOpen] = useState(false);
@@ -157,9 +160,11 @@ export function AgentRow({
           aria-checked={picked}
           aria-label={picked ? `Unpick ${agent.name}` : `Pick ${agent.name}`}
           onClick={() => onToggle(agent.id)}
+          disabled={togglePending}
           className={cn(
             "h-8 w-8 shrink-0 rounded-neu-sm flex items-center justify-center transition-colors",
-            picked ? "text-on-accent" : "neu-raised-sm text-text-muted"
+            picked ? "text-on-accent" : "neu-raised-sm text-text-muted",
+            togglePending && "opacity-70"
           )}
           style={picked ? { background: "var(--accent-gradient)" } : undefined}
         >
