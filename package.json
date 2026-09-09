@@ -20,7 +20,11 @@
     "d1:production:exec": "wrangler d1 execute DB --remote --env production",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local --env local",
+    "db:migrate:staging": "wrangler d1 migrations apply DB --remote --env staging",
+    "db:migrate:production": "wrangler d1 migrations apply DB --remote --env production",
     "db:seed:local": "node scripts/seed.mjs",
+    "db:seed:staging": "node scripts/seed-staging.mjs",
+    "postdeploy:check": "node scripts/post-deploy-check.mjs",
     "test:lead": "node scripts/send-test-lead.mjs",
     "test": "vitest run",
     "test:watch": "vitest"

@@ -2,18 +2,14 @@
 # MTA Consultant Portal — Cloudflare / OpenNext configuration
 #
 # Three environments: local, staging, production.
-# Each env has its own D1 database.
-#
-# Naming convention: the wrangler `binding` key is what our code reads
-# (env.DB), so we keep it identical across environments. The
-# `database_name` and `database_id` are the Cloudflare-account-level
-# identifiers, and DIFFER per env — that's where "each env has its own
-# D1 binding" is realised.
+# Each env has its own D1 database and its own set of secrets.
+# The `binding` key stays "DB" across envs so code reads env.DB
+# without switching on environment.
 #
 # For local dev, miniflare creates a SQLite file under .wrangler/state
 # the first time `wrangler d1 execute DB --local` runs. Zero setup.
-# Staging / production database_ids get filled in later, when Sean's
-# Cloudflare account exists and we run `wrangler d1 create`.
+# Staging + production database_ids come from `wrangler d1 create`
+# against the target Cloudflare account.
 # ------------------------------------------------------------------
 
 name = "mta-portal"
@@ -40,7 +36,12 @@ database_id = "00000000-0000-0000-0000-000000000001"
 migrations_dir = "drizzle"
 
 # ------------------------------------------------------------------
-# STAGING (deploy: `wrangler deploy --env staging`)
+# STAGING (deploy: `pnpm deploy:staging`)
+#
+# Deploys to https://mta-portal-staging.<subdomain>.workers.dev by
+# default (workers.dev is enabled unless workers_dev=false is set).
+# Uncomment the [[env.staging.routes]] block once the DNS zone for
+# mytopagent.co.nz is confirmed on the target Cloudflare account.
 # ------------------------------------------------------------------
 [env.staging]
 name = "mta-portal-staging"
@@ -53,8 +54,31 @@ database_name = "mta-portal-staging"
 database_id = "TODO_STAGING_D1_ID"
 migrations_dir = "drizzle"
 
+# --- Custom domain (leave commented until the zone is on the target
+# --- Cloudflare account and Sean has added the NS/CNAME records).
+# [[env.staging.routes]]
+# pattern = "portal-staging.mytopagent.co.nz"
+# custom_domain = true
+
+# Dispatcher tick — hits the OpenNext worker's scheduled handler every
+# minute (§3 "Cloudflare Cron: 1 min dispatcher"). No-op until the
+# scheduled handler lands with Phase 6; the post-deploy check reports
+# the freshness gap under checks.cron.last_tick_at.
+[env.staging.triggers]
+crons = ["*/1 * * * *"]
+
+# Non-secret env vars. Real values pinned via `wrangler secret put`
+# (see docs/DEPLOY.md) or added here once they're known.
+# [env.staging.vars]
+# POSTMARK_FROM_EMAIL   = "noreply@insighter.digital"
+# POSTMARK_FROM_NAME    = "MTA Portal (staging)"
+# POSTMARK_MESSAGE_STREAM = "outbound-staging"
+# TRANSMITSMS_SENDER_ID = "MTA"
+# AC_PIPELINE_ID        = "<pipeline id>"
+# AC_FIELD_D1_LEAD_ID   = "<custom-field id>"
+
 # ------------------------------------------------------------------
-# PRODUCTION (deploy: `wrangler deploy --env production`)
+# PRODUCTION (deploy: `pnpm deploy:production` — GATED by v* tag)
 # ------------------------------------------------------------------
 [env.production]
 name = "mta-portal-production"
@@ -66,3 +90,10 @@ database_name = "mta-portal-production"
 #   `wrangler d1 create mta-portal-production`.
 database_id = "TODO_PRODUCTION_D1_ID"
 migrations_dir = "drizzle"
+
+# [[env.production.routes]]
+# pattern = "portal.mytopagent.co.nz"
+# custom_domain = true
+
+[env.production.triggers]
+crons = ["*/1 * * * *"]
