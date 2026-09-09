@@ -41,10 +41,11 @@ export default async function ComparePage({ params }: Props) {
   const medianSale = median(salePrices);
   const medianCv = median(cvAtSales);
 
-  const subjectCv = property?.cv?.value ?? 0;
-  const subjectEstimate = property?.estimate?.value ?? 0;
-  const subjectLand = property?.land_area?.value ?? 0;
-  const subjectFloor = property?.floor_area?.value ?? 0;
+  const facts = property?.facts;
+  const subjectCv = facts?.cv?.value ?? 0;
+  const subjectEstimate = facts?.estimate?.value ?? 0;
+  const subjectLand = facts?.land_area?.value ?? 0;
+  const subjectFloor = facts?.floor_area?.value ?? 0;
 
   const maxCv = Math.max(subjectCv, medianCv);
   const maxSale = Math.max(subjectEstimate, medianSale);
@@ -120,8 +121,8 @@ export default async function ComparePage({ params }: Props) {
             <div>
               <dt className="t-caption text-text-muted">Last sold</dt>
               <dd className="t-body tabular">
-                {property?.last_sold_date
-                  ? formatDateNZ(property.last_sold_date.value)
+                {facts?.last_sold_date
+                  ? formatDateNZ(facts.last_sold_date.value)
                   : "—"}
               </dd>
             </div>

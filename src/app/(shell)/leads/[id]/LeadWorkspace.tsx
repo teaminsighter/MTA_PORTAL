@@ -8,9 +8,9 @@ import type {
   AgentCandidate,
   Comparable,
   Lead,
-  PropertyFacts,
 } from "@/lib/mock";
 import type { ShortlistEntry } from "@/lib/repo/agents";
+import type { PropertyBundle } from "@/lib/repo/properties";
 import { AgentRow } from "@/components/lead/AgentRow";
 import { CandidateRow } from "@/components/lead/CandidateRow";
 import { CompactTimeline } from "@/components/lead/CompactTimeline";
@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 
 interface Props {
   lead: Lead;
-  property: PropertyFacts | null;
+  property: PropertyBundle | null;
   comps: Comparable[];
   shortlist: ShortlistEntry[];
   candidates: AgentCandidate[];
@@ -146,17 +146,12 @@ export default function LeadWorkspace({
               tab === "property" ? "block" : "hidden md:flex"
             )}
           >
-            {property ? (
-              <>
-                <PropertyHero property={property} />
-                <PropertyTabs comps={comps} history={activity} />
-              </>
-            ) : (
-              <EmptyState
-                title="Property enriching…"
-                body="Cotality is fetching CV, land, floor and last-sold data. Fill in manually if you can't wait."
-              />
-            )}
+            <PropertyHero
+              leadPublicId={lead.id}
+              property={property?.facts ?? {}}
+              initialVersion={property?.version ?? 0}
+            />
+            <PropertyTabs comps={comps} history={activity} />
           </section>
 
           {/* ---------- CENTRE: shortlist ---------- */}

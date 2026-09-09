@@ -72,9 +72,19 @@ function toFacts(row: PropertyRow): PropertyFacts {
   };
 }
 
+/**
+ * Property + row version so callers can optimistic-write via
+ * updatePropertyFieldsAction. If no property row exists yet, version
+ * comes back as 0 — the create-path signal for the action.
+ */
+export interface PropertyBundle {
+  facts: PropertyFacts;
+  version: number;
+}
+
 export async function getPropertyForLead(
   publicLeadId: string
-): Promise<PropertyFacts | null> {
+): Promise<PropertyBundle | null> {
   const rowId = await getLeadRowId(publicLeadId);
   if (!rowId) return null;
   const [row] = await getDb()
@@ -82,5 +92,11 @@ export async function getPropertyForLead(
     .from(propertiesTable)
     .where(eq(propertiesTable.lead_id, rowId))
     .limit(1);
-  return row ? toFacts(row) : null;
+  if (!row) {
+    // Lead exists but no property row yet — return an empty bundle at
+    // version 0 so the workspace can render empty tiles and the edit
+    // action knows to INSERT on the first save.
+    return { facts: {}, version: 0 };
+  }
+  return { facts: toFacts(row), version: row.version };
 }
