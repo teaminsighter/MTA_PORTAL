@@ -4,6 +4,8 @@ import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { audit_log } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoListActivityForLead } from "@/lib/demo/data";
 import type { ActivityEvent, ActivityType } from "@/lib/mock";
 
 /*
@@ -29,6 +31,7 @@ function mapActionToType(action: string): ActivityType {
 export async function listActivityForLead(
   publicLeadId: string
 ): Promise<ActivityEvent[]> {
+  if (isDemoMode()) return demoListActivityForLead(publicLeadId);
   const rowId = await getLeadRowId(publicLeadId);
   if (!rowId) return [];
   const rows = await getDb()

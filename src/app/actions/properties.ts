@@ -8,6 +8,7 @@ import { properties } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
 import { logAudit } from "@/lib/audit";
+import { isDemoMode } from "@/lib/demo/mode";
 
 /*
  * Manual property field save.
@@ -87,6 +88,12 @@ const FACT_FIELDS: FactField[] = [
 export async function updatePropertyFieldsAction(
   input: UpdatePropertyFieldsInput
 ): Promise<ActionResult<{ version: number; updated_at: string }>> {
+  if (isDemoMode()) {
+    return {
+      ok: true,
+      data: { version: input.expected_version + 1, updated_at: new Date().toISOString() },
+    };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 

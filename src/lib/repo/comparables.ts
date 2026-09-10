@@ -4,6 +4,8 @@ import { asc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { property_comparables as compsTable } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoListComparablesForLead } from "@/lib/demo/data";
 import type { Comparable } from "@/lib/mock";
 
 type Row = typeof compsTable.$inferSelect;
@@ -23,6 +25,7 @@ function toComparable(row: Row): Comparable {
 export async function listComparablesForLead(
   publicLeadId: string
 ): Promise<Comparable[]> {
+  if (isDemoMode()) return demoListComparablesForLead(publicLeadId);
   const rowId = await getLeadRowId(publicLeadId);
   if (!rowId) return [];
   const rows = await getDb()

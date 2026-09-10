@@ -4,6 +4,8 @@ import { and, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { agent_candidates as candidatesTable } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoListCandidatesForLead } from "@/lib/demo/data";
 import type { AgentCandidate } from "@/lib/mock";
 
 type Row = typeof candidatesTable.$inferSelect;
@@ -30,6 +32,7 @@ function toCandidate(row: Row): AgentCandidate {
 export async function listCandidatesForLead(
   publicLeadId: string
 ): Promise<AgentCandidate[]> {
+  if (isDemoMode()) return demoListCandidatesForLead(publicLeadId);
   const rowId = await getLeadRowId(publicLeadId);
   if (!rowId) return [];
   const rows = await getDb()

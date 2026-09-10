@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isDemoMode } from "@/lib/demo/mode";
 
 /*
  * Route protection.
@@ -16,6 +17,11 @@ import { auth } from "@/lib/auth";
  * asserts "signed in at all".
  */
 export default auth((req) => {
+  // Demo mode: skip the auth gate entirely so the client walkthrough
+  // works without Google OAuth. Repos short-circuit to mock data
+  // (see src/lib/demo/mode.ts).
+  if (isDemoMode()) return;
+
   if (!req.auth) {
     const url = new URL("/signin", req.nextUrl);
     if (req.nextUrl.pathname !== "/") {

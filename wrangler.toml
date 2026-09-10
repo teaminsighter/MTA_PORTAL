@@ -78,6 +78,24 @@ crons = ["*/1 * * * *"]
 # AC_FIELD_D1_LEAD_ID   = "<custom-field id>"
 
 # ------------------------------------------------------------------
+# DEMO (deploy: `pnpm deploy:demo`, or auto via .github/workflows/
+# deploy-demo.yml on any push to main)
+#
+# Public UI walkthrough — auth off, no D1, all data from mock JSON.
+# Deploys to https://mta-portal-demo.<subdomain>.workers.dev.
+# Never enable this env against real client data.
+# ------------------------------------------------------------------
+[env.demo]
+name = "mta-portal-demo"
+
+[env.demo.vars]
+DEMO_MODE = "1"
+# Auth.js still boots even though middleware bypasses it in demo
+# mode. Placeholder secret keeps it from throwing at startup. Never
+# reuse this in staging or production.
+AUTH_SECRET = "demo-only-not-a-real-secret-safe-to-see"
+
+# ------------------------------------------------------------------
 # PRODUCTION (deploy: `pnpm deploy:production` — GATED by v* tag)
 # ------------------------------------------------------------------
 [env.production]

@@ -27,6 +27,12 @@ export default [
       // Repos and route handlers frequently accept `unknown` payloads
       // that we narrow with zod. Off here, on again if we get sloppy.
       "@typescript-eslint/no-explicit-any": "warn",
+      // Underscore-prefixed args are the standard "intentionally unused"
+      // convention (e.g. function signature parity with a related call).
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
+      ],
     },
   },
 ];

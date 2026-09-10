@@ -3,6 +3,12 @@ import "server-only";
 import { desc, eq, ne } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { leads as leadsTable } from "@/db/schema";
+import { isDemoMode } from "@/lib/demo/mode";
+import {
+  demoGetLead,
+  demoListLeads,
+  demoListRecentLeads,
+} from "@/lib/demo/data";
 import type { Lead } from "@/lib/mock";
 
 /*
@@ -39,6 +45,7 @@ export async function getLeadRow(publicId: string): Promise<
     }
   | null
 > {
+  if (isDemoMode()) return null; // auto-advance skipped in demo
   const [row] = await getDb()
     .select({
       id: leadsTable.id,
@@ -52,6 +59,7 @@ export async function getLeadRow(publicId: string): Promise<
 }
 
 export async function listLeads(opts: ListOpts = {}): Promise<Lead[]> {
+  if (isDemoMode()) return demoListLeads();
   const q = getDb().select().from(leadsTable);
   const rows = opts.includePlaceholders
     ? await q.orderBy(desc(leadsTable.created_at))
@@ -62,6 +70,7 @@ export async function listLeads(opts: ListOpts = {}): Promise<Lead[]> {
 }
 
 export async function getLead(publicId: string): Promise<Lead | null> {
+  if (isDemoMode()) return demoGetLead(publicId);
   const [row] = await getDb()
     .select()
     .from(leadsTable)
@@ -84,6 +93,7 @@ export async function listRecentLeads(
   limit = 6,
   opts: ListOpts = {}
 ): Promise<Lead[]> {
+  if (isDemoMode()) return demoListRecentLeads(limit);
   const q = getDb().select().from(leadsTable);
   const rows = opts.includePlaceholders
     ? await q.orderBy(desc(leadsTable.created_at)).limit(limit)

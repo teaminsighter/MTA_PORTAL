@@ -3,9 +3,12 @@ import "server-only";
 import { desc, eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { lead_outcomes as outcomesTable, leads as leadsTable } from "@/db/schema";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoListRecentOutcomes } from "@/lib/demo/data";
 import type { Outcome } from "@/lib/mock";
 
 export async function listRecentOutcomes(limit = 12): Promise<Outcome[]> {
+  if (isDemoMode()) return demoListRecentOutcomes(limit);
   // Join to leads to project the public d1_lead_id, not the internal row id.
   const rows = await getDb()
     .select({

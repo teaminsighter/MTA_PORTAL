@@ -1,6 +1,9 @@
-import { Search } from "lucide-react";
+import { Eye, Search } from "lucide-react";
+import { isDemoMode } from "@/lib/demo/mode";
 
 export function Topbar() {
+  const demo = isDemoMode();
+
   return (
     <header className="neu-raised px-4 py-3 flex items-center gap-4 sticky top-0 z-10">
       <div className="lg:hidden flex items-center gap-2">
@@ -26,12 +29,21 @@ export function Topbar() {
       </div>
 
       <div className="flex items-center gap-3">
+        {demo ? (
+          <span
+            className="chip chip-warning t-caption flex items-center gap-1"
+            aria-label="Demo mode — no real data, changes don't persist"
+          >
+            <Eye size={11} />
+            Demo mode
+          </span>
+        ) : null}
         <div className="neu-raised-sm flex items-center gap-2 pl-1 pr-1 sm:pr-3 py-1">
           <div className="h-7 w-7 rounded-neu-pill flex items-center justify-center text-on-accent font-semibold t-caption bg-accent">
-            SW
+            {demo ? "D" : "SW"}
           </div>
           <span className="hidden sm:inline t-caption text-text-muted">
-            Sarah W.
+            {demo ? "Demo viewer" : "Sarah W."}
           </span>
         </div>
       </div>

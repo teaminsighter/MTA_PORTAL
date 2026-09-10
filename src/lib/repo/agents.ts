@@ -4,6 +4,12 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { agents as agentsTable, lead_agent_picks } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
+import { isDemoMode } from "@/lib/demo/mode";
+import {
+  demoCountSignedAgents,
+  demoGetShortlistForLead,
+  demoListAgents,
+} from "@/lib/demo/data";
 import type { Agent } from "@/lib/mock";
 
 type Row = typeof agentsTable.$inferSelect;
@@ -42,6 +48,7 @@ export interface ShortlistEntry {
 }
 
 export async function listAgents(): Promise<Agent[]> {
+  if (isDemoMode()) return demoListAgents();
   const rows = await getDb()
     .select()
     .from(agentsTable)
@@ -59,6 +66,7 @@ export async function listAgents(): Promise<Agent[]> {
 export async function getShortlistForLead(
   publicLeadId: string
 ): Promise<ShortlistEntry[]> {
+  if (isDemoMode()) return demoGetShortlistForLead(publicLeadId);
   const leadRowId = await getLeadRowId(publicLeadId);
   const db = getDb();
 
@@ -108,6 +116,7 @@ export async function getShortlistForLead(
 }
 
 export async function countSignedAgents(): Promise<number> {
+  if (isDemoMode()) return demoCountSignedAgents();
   const rows = await getDb()
     .select({ id: agentsTable.id })
     .from(agentsTable)

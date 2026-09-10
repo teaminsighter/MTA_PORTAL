@@ -13,6 +13,7 @@ import {
 import { getLeadRowId } from "@/lib/repo/leads";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
 import { logAudit } from "@/lib/audit";
+import { isDemoMode } from "@/lib/demo/mode";
 
 /*
  * Candidate flow: log a call outcome, promote to a signed(-ish) agent,
@@ -48,6 +49,9 @@ export type LogCandidateContactInput = z.infer<typeof LogInput>;
 export async function logCandidateContactAction(
   input: LogCandidateContactInput
 ): Promise<ActionResult<{ contact_log_id: string }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { contact_log_id: "demo_contact" } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 
@@ -137,6 +141,9 @@ export type PromoteCandidateInput = z.infer<typeof PromoteInput>;
 export async function promoteCandidateAction(
   input: PromoteCandidateInput
 ): Promise<ActionResult<{ agent_id: string }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { agent_id: `demo_agent_${input.candidate_id}` } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 
@@ -257,6 +264,9 @@ export type DismissCandidateInput = z.infer<typeof DismissInput>;
 export async function dismissCandidateAction(
   input: DismissCandidateInput
 ): Promise<ActionResult<{ candidate_id: string }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { candidate_id: input.candidate_id } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 

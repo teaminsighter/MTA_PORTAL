@@ -8,6 +8,7 @@ import { lead_agent_picks } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
 import { logAudit } from "@/lib/audit";
+import { isDemoMode } from "@/lib/demo/mode";
 
 /*
  * Per-pick reason note.
@@ -34,6 +35,9 @@ export type SaveReasonNoteInput = z.infer<typeof Input>;
 export async function saveReasonNoteAction(
   input: SaveReasonNoteInput
 ): Promise<ActionResult<{ version: number }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { version: input.expected_version + 1 } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 
@@ -186,6 +190,9 @@ export type UnpickAgentInput = z.infer<typeof UnpickInput>;
 export async function pickAgentAction(
   input: PickAgentInput
 ): Promise<ActionResult<{ version: number; display_order: number }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { version: 1, display_order: 0 } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 
@@ -257,6 +264,9 @@ export async function pickAgentAction(
 export async function unpickAgentAction(
   input: UnpickAgentInput
 ): Promise<ActionResult<{ version: number }>> {
+  if (isDemoMode()) {
+    return { ok: true, data: { version: input.expected_version + 1 } };
+  }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
 

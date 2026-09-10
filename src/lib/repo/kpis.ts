@@ -8,6 +8,8 @@ import {
   leads as leadsTable,
   sync_conflicts,
 } from "@/db/schema";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoComputeKpis } from "@/lib/demo/data";
 import type { Kpis } from "@/lib/mock";
 
 /*
@@ -17,6 +19,7 @@ import type { Kpis } from "@/lib/mock";
  * in Phase 5/6. The UI shape is unchanged.
  */
 export async function computeKpis(): Promise<Kpis> {
+  if (isDemoMode()) return demoComputeKpis();
   const db = getDb();
 
   const startOfMonth = new Date();

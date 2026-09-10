@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy:demo": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env demo",
     "deploy:staging": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env staging",
     "deploy:production": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env production",
     "d1:local:exec": "wrangler d1 execute DB --local --env local",

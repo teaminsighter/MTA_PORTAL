@@ -4,6 +4,8 @@ import { eq } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { properties as propertiesTable } from "@/db/schema";
 import { getLeadRowId } from "@/lib/repo/leads";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoGetPropertyForLead } from "@/lib/demo/data";
 import type { PropertyFacts, Provenance } from "@/lib/mock";
 
 type PropertyRow = typeof propertiesTable.$inferSelect;
@@ -85,6 +87,7 @@ export interface PropertyBundle {
 export async function getPropertyForLead(
   publicLeadId: string
 ): Promise<PropertyBundle | null> {
+  if (isDemoMode()) return demoGetPropertyForLead(publicLeadId);
   const rowId = await getLeadRowId(publicLeadId);
   if (!rowId) return null;
   const [row] = await getDb()
