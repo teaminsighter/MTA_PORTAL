@@ -142,26 +142,13 @@ export function LeadPreview({ lead }: Props) {
       {/* ---------- Property snapshot ---------- */}
       <Section title="Property snapshot" icon={<Home size={12} />}>
         {cv || est ? (
-          <div className="surface-flat p-4 rounded-neu grid grid-cols-[1fr_auto] gap-4 items-center">
-            <div className="flex flex-col gap-3 min-w-0">
-              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                <HeroFigure label="Capital value" value={cv} align="left" />
-                <DeltaChip delta={delta} />
-                <HeroFigure label="Estimate" value={est} align="right" />
-              </div>
-              {property ? <PropertyChips property={property} /> : null}
+          <div className="surface-flat p-4 rounded-neu flex flex-col gap-3">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <HeroFigure label="Capital value" value={cv} align="left" />
+              <DeltaChip delta={delta} />
+              <HeroFigure label="Estimate" value={est} align="right" />
             </div>
-            {/* Thumbnail — deterministic per lead so it stays stable. */}
-            <div className="relative h-24 w-32 rounded-neu-sm overflow-hidden shrink-0 hidden sm:block">
-              <Image
-                src={heroImageUrl}
-                alt=""
-                fill
-                sizes="128px"
-                className="object-cover"
-                unoptimized
-              />
-            </div>
+            {property ? <PropertyChips property={property} /> : null}
           </div>
         ) : (
           <p className="t-body text-text-muted">
@@ -169,17 +156,6 @@ export function LeadPreview({ lead }: Props) {
           </p>
         )}
       </Section>
-
-      {/* ---------- Data sources coverage ---------- */}
-      {property ? (
-        <Section
-          id="data-sources"
-          title="Data sources"
-          icon={<Building2 size={12} />}
-        >
-          <DataSourcesCard property={property} />
-        </Section>
-      ) : null}
 
       {/* ---------- Full property facts ---------- */}
       {property ? (
@@ -449,6 +425,45 @@ export function LeadPreview({ lead }: Props) {
             ))}
           </ol>
         </Section>
+      ) : null}
+
+      {/* ---------- Bottom row: data sources · property image ---------- */}
+      {/* Two lower-priority panels get equal room here, out of the way
+          of the primary triage data above. Stacks on narrow panes. */}
+      {property ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Section
+            id="data-sources"
+            title="Data sources"
+            icon={<Building2 size={12} />}
+          >
+            <DataSourcesCard property={property} />
+          </Section>
+          <Section title="Property image" icon={<Home size={12} />}>
+            <div className="relative w-full aspect-[4/3] rounded-neu overflow-hidden surface-flat">
+              <Image
+                src={heroImageUrl}
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 20vw, 100vw"
+                className="object-cover"
+                unoptimized
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0 pointer-events-none"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.4) 100%)",
+                }}
+              />
+              <div className="absolute bottom-2 left-3 right-3 t-caption text-white/90 flex items-center gap-1 truncate">
+                <MapPin size={11} className="shrink-0" />
+                <span className="truncate">{full.address}</span>
+              </div>
+            </div>
+          </Section>
+        </div>
       ) : null}
 
       </div>
