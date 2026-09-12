@@ -12,6 +12,7 @@ import { listActivityForLead } from "@/lib/repo/activity";
 import type {
   ActivityEvent,
   Agent,
+  AgentCandidate,
   Comparable,
   Lead,
   PropertyFacts,
@@ -38,6 +39,8 @@ export type LeadPreview = {
   lead: Lead;
   property: PropertyFacts | null;
   picked_agents: Agent[];
+  suggested_agents: Agent[];
+  candidates: AgentCandidate[];
   comparables: Comparable[];
   activity: ActivityEvent[];
   counts: {
@@ -85,6 +88,10 @@ export async function GET(_req: Request, { params }: Params) {
       )
       .slice(0, PREVIEW_LIMIT)
       .map((e) => e.agent),
+    // "Suggested" is the full shortlist (picked + unpicked) — what the
+    // pill count reflects and what the operator wants to see inline.
+    suggested_agents: shortlist.slice(0, PREVIEW_LIMIT).map((e) => e.agent),
+    candidates: candidates.slice(0, PREVIEW_LIMIT),
     comparables: [...comps]
       .sort((a, b) => a.distance_m - b.distance_m)
       .slice(0, PREVIEW_LIMIT),

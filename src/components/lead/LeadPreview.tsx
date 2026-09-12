@@ -21,7 +21,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LeadPreview as LeadPreviewData } from "@/app/api/inbox/[id]/route";
-import type { Lead, PropertyFacts, Provenance } from "@/lib/mock";
+import type { AgentCandidate, Lead, PropertyFacts, Provenance } from "@/lib/mock";
 import { StateChip } from "@/components/lead/StateChip";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
 import { ErrorState } from "@/components/states/ErrorState";
@@ -62,6 +62,12 @@ const EMPTY_COUNTS: LeadPreviewData["counts"] = {
   activity: 0,
 };
 
+const CONFIDENCE_TONE: Record<AgentCandidate["confidence"], string> = {
+  high: "chip-success",
+  medium: "chip-info",
+  low: "chip-neutral",
+};
+
 export function LeadPreview({ lead }: Props) {
   const query = useQuery<LeadPreviewData>({
     queryKey: ["inbox-preview", lead.id],
@@ -78,6 +84,8 @@ export function LeadPreview({ lead }: Props) {
       lead,
       property: null,
       picked_agents: [],
+      suggested_agents: [],
+      candidates: [],
       comparables: [],
       activity: [],
       counts: EMPTY_COUNTS,
@@ -101,8 +109,16 @@ export function LeadPreview({ lead }: Props) {
     );
   }
 
-  const { lead: full, property, counts, picked_agents, comparables, activity } =
-    data;
+  const {
+    lead: full,
+    property,
+    counts,
+    picked_agents,
+    suggested_agents,
+    candidates,
+    comparables,
+    activity,
+  } = data;
   const cv = property?.cv?.value ?? null;
   const est = property?.estimate?.value ?? null;
   const delta = deltaPct(cv, est);
@@ -264,13 +280,13 @@ export function LeadPreview({ lead }: Props) {
           icon={<Users size={12} />}
           label="Suggested"
           value={counts.suggested_agents}
-          href={`/leads/${full.id}#shortlist`}
+          targetId="suggested-agents"
         />
         <CountPill
           icon={<UserRound size={12} />}
           label="Candidates"
           value={counts.candidates}
-          href={`/leads/${full.id}#candidates`}
+          targetId="candidates"
         />
         <CountPill
           icon={<Home size={12} />}
@@ -397,6 +413,81 @@ export function LeadPreview({ lead }: Props) {
                       <MessageSquare size={11} /> SMS
                     </span>
                   ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* ---------- Suggested agents ---------- */}
+      {suggested_agents.length > 0 ? (
+        <Section
+          id="suggested-agents"
+          title={`Suggested · ${counts.suggested_agents}${
+            counts.suggested_agents > suggested_agents.length
+              ? ` (top ${suggested_agents.length})`
+              : ""
+          }`}
+          icon={<Users size={12} />}
+        >
+          <ul className="flex flex-col gap-2">
+            {suggested_agents.map((a) => (
+              <li
+                key={a.id}
+                className="neu-raised-sm px-3 py-2 flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0">
+                  <div className="t-body font-semibold truncate">{a.name}</div>
+                  <div className="t-caption text-text-muted truncate">
+                    {a.agency}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 t-caption text-text-muted tabular">
+                  <span title="Sales in last 12 months">
+                    {a.sales_last_12mo} sales
+                  </span>
+                  <span aria-hidden>·</span>
+                  <span title="Nearby comparable sales">
+                    {a.nearby_sales} nearby
+                  </span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* ---------- Candidates ---------- */}
+      {candidates.length > 0 ? (
+        <Section
+          id="candidates"
+          title={`Candidates · ${counts.candidates}${
+            counts.candidates > candidates.length
+              ? ` (top ${candidates.length})`
+              : ""
+          }`}
+          icon={<UserRound size={12} />}
+        >
+          <ul className="flex flex-col gap-2">
+            {candidates.map((c) => (
+              <li
+                key={c.id}
+                className="neu-raised-sm px-3 py-2 flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0">
+                  <div className="t-body font-semibold truncate">{c.name}</div>
+                  <div className="t-caption text-text-muted truncate">
+                    {c.agency}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span
+                    className={cn("chip", CONFIDENCE_TONE[c.confidence])}
+                    title={`Match confidence: ${c.confidence}`}
+                  >
+                    {c.confidence}
+                  </span>
                 </div>
               </li>
             ))}
