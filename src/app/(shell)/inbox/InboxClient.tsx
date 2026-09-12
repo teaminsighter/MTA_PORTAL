@@ -11,6 +11,7 @@ import {
 import type { Lead, LeadState } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
 import { LeadPreview } from "@/components/lead/LeadPreview";
+import { LeadShortlistColumn } from "@/components/lead/LeadShortlistColumn";
 import { EmptyState } from "@/components/states/EmptyState";
 import { ErrorState } from "@/components/states/ErrorState";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
@@ -100,6 +101,16 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
   // Left-rail collapse (desktop only) — lets the preview pane take
   // the full width when Sarah wants a clear read of a single lead.
   const [listCollapsed, setListCollapsed] = useState(false);
+  // Wizard stage. "preview" is the default triage view; "shortlist"
+  // is the second stage where Sarah calls / picks agents. Every
+  // future stage (dispatch, responses) becomes another value here.
+  const [stage, setStage] = useState<"preview" | "shortlist">("preview");
+
+  // Switching leads always drops back to the preview stage — Sarah
+  // reviews a lead before deciding to contact its agents.
+  useEffect(() => {
+    setStage("preview");
+  }, [selectedId]);
 
   // Prime the shared query cache with the SSR payload so the Sidebar
   // badge has data on first paint. The by_state/total fields don't
@@ -136,9 +147,15 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* Collapsed rail — desktop only. Renders in place of the list
-          so the toggle stays in the same spot to re-expand from. */}
-      {listCollapsed ? (
+      {/* ---------- Shortlist stage: compact context on the left ---------- */}
+      {stage === "shortlist" && selected ? (
+        <section className="hidden md:flex md:w-[420px] shrink-0 md:sticky md:top-4 md:self-start">
+          <LeadPreview lead={selected} hideCta />
+        </section>
+      ) : null}
+
+      {/* ---------- Preview stage: collapsed rail toggle (desktop) ---------- */}
+      {stage === "preview" && listCollapsed ? (
         <aside className="hidden md:flex flex-col items-start pt-1 shrink-0">
           <button
             type="button"
@@ -154,12 +171,13 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         </aside>
       ) : null}
 
-      {/* Left rail — list */}
+      {/* Left rail — list. Hidden entirely during the shortlist stage
+          so the property + contact columns get all the screen. */}
       <section
         id="inbox-list"
         className={cn(
           "md:w-[420px] w-full flex flex-col gap-3",
-          listCollapsed && "hidden md:hidden"
+          (listCollapsed || stage === "shortlist") && "hidden md:hidden"
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -272,13 +290,23 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         ) : null}
       </section>
 
-      {/* Right pane — rich preview (desktop only).
-          sticky + self-start so the pane stays pinned in view while
-          the left inbox list scrolls the page. Topbar is ~4rem inside
-          a p-4 shell → top-4 lines up neatly under it. */}
+      {/* Right pane — either the property preview (stage=preview) or
+          the shortlist / call surface (stage=shortlist). sticky +
+          self-start pin it while the (hidden or visible) inbox list
+          scrolls independently. */}
       <section className="hidden md:flex flex-1 min-w-0 md:sticky md:top-4 md:self-start">
         {selected ? (
-          <LeadPreview lead={selected} />
+          stage === "preview" ? (
+            <LeadPreview
+              lead={selected}
+              onStartReview={() => setStage("shortlist")}
+            />
+          ) : (
+            <LeadShortlistColumn
+              lead={selected}
+              onBack={() => setStage("preview")}
+            />
+          )
         ) : (
           <EmptyState
             className="w-full"

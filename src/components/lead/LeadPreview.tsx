@@ -52,6 +52,12 @@ import {
 
 interface Props {
   lead: Lead;
+  /* Wire the CTA to advance the inbox wizard stage instead of
+     navigating to /leads/[id]. If absent, falls back to a Link. */
+  onStartReview?: () => void;
+  /* When the pane is being used as the compact "context" column
+     during the shortlist stage, we don't need a second CTA. */
+  hideCta?: boolean;
 }
 
 const EMPTY_COUNTS: LeadPreviewData["counts"] = {
@@ -68,7 +74,7 @@ const CONFIDENCE_TONE: Record<AgentCandidate["confidence"], string> = {
   low: "chip-neutral",
 };
 
-export function LeadPreview({ lead }: Props) {
+export function LeadPreview({ lead, onStartReview, hideCta }: Props) {
   const query = useQuery<LeadPreviewData>({
     queryKey: ["inbox-preview", lead.id],
     queryFn: async () => {
@@ -559,13 +565,24 @@ export function LeadPreview({ lead }: Props) {
 
       </div>
       {/* ---------- Primary CTA (floats bottom-right over scroll) ---------- */}
-      <Link
-        href={`/leads/${full.id}`}
-        className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
-      >
-        Open lead
-        <ArrowRight size={16} />
-      </Link>
+      {hideCta ? null : onStartReview ? (
+        <button
+          type="button"
+          onClick={onStartReview}
+          className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
+        >
+          Start review
+          <ArrowRight size={16} />
+        </button>
+      ) : (
+        <Link
+          href={`/leads/${full.id}`}
+          className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
+        >
+          Start review
+          <ArrowRight size={16} />
+        </Link>
+      )}
     </div>
   );
 }
