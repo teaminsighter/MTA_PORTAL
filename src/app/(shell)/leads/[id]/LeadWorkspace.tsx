@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useOptimistic, useState, useTransition } from "react";
+import { useMemo, useOptimistic, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BarChart3, Send, UserPlus } from "lucide-react";
+import { BarChart3, Check, Send, UserPlus } from "lucide-react";
 import { pickAgentAction, unpickAgentAction } from "@/app/actions/picks";
 import type {
   ActivityEvent,
@@ -47,6 +47,25 @@ export default function LeadWorkspace({
   const [tab, setTab] = useState<MobileTab>("property");
   const [railCollapsed, setRailCollapsed] = useState(false);
   const router = useRouter();
+
+  // Mobile send button animation state — mirrors the desktop SendBar
+  // pattern (sending → sent → idle). Demo-safe: no server call yet.
+  type MobileSendState = "idle" | "sending" | "sent";
+  const [mobileSendState, setMobileSendState] =
+    useState<MobileSendState>("idle");
+  const mobileSendTimer = useRef<number | null>(null);
+  function triggerMobileSend() {
+    if (mobileSendState !== "idle" || recipientCount === 0) return;
+    setMobileSendState("sending");
+    if (mobileSendTimer.current) window.clearTimeout(mobileSendTimer.current);
+    mobileSendTimer.current = window.setTimeout(() => {
+      setMobileSendState("sent");
+      mobileSendTimer.current = window.setTimeout(
+        () => setMobileSendState("idle"),
+        1600
+      );
+    }, 1400);
+  }
 
   /*
    * Picks are now server-of-record on lead_agent_picks. The UI reads
@@ -208,12 +227,19 @@ export default function LeadWorkspace({
               tab === "property" ? "block" : "hidden md:flex"
             )}
           >
-            <PropertyHero
-              leadPublicId={lead.id}
+            <div id="property-edit" className="scroll-mt-4">
+              <PropertyHero
+                leadPublicId={lead.id}
+                property={property?.facts ?? {}}
+                initialVersion={property?.version ?? 0}
+              />
+            </div>
+            <PropertyTabs
+              lead={lead}
               property={property?.facts ?? {}}
-              initialVersion={property?.version ?? 0}
+              comps={comps}
+              history={activity}
             />
-            <PropertyTabs comps={comps} history={activity} />
           </section>
 
           {/* ---------- CENTRE: shortlist ---------- */}
@@ -319,11 +345,32 @@ export default function LeadWorkspace({
           </div>
           <button
             type="button"
-            className="btn-accent-glass"
-            disabled={recipientCount === 0}
+            onClick={triggerMobileSend}
+            className="btn-accent-glass min-w-[112px] justify-center"
+            disabled={recipientCount === 0 || mobileSendState !== "idle"}
+            aria-busy={mobileSendState !== "idle"}
           >
-            <Send size={16} />
-            Send
+            {mobileSendState === "idle" ? (
+              <>
+                <Send size={16} />
+                Send
+              </>
+            ) : mobileSendState === "sending" ? (
+              <>
+                <Send size={16} className="anim-send-fly" aria-hidden />
+                <span className="flex items-center gap-0.5">
+                  Sending
+                  <span className="anim-pulse-dot">.</span>
+                  <span className="anim-pulse-dot anim-pulse-dot-2">.</span>
+                  <span className="anim-pulse-dot anim-pulse-dot-3">.</span>
+                </span>
+              </>
+            ) : (
+              <>
+                <Check size={16} className="anim-spring" aria-hidden />
+                Sent
+              </>
+            )}
           </button>
         </BottomActionBar>
       ) : null}

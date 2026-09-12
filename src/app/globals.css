@@ -193,6 +193,9 @@ html, body {
   /*   .anim-spring       overshoot scale for the tick               */
   /*   .anim-slide-up     Send bar entrance from below viewport       */
   /*   .anim-count-roll   Send bar count changes                      */
+  /*   .anim-call-ring    Concentric ping around a "Calling…" button  */
+  /*   .anim-send-fly     Send icon lifts and drifts on click         */
+  /*   .anim-pulse-dot    Sequential dot pulse for "…" loaders        */
   /*   .expand-row        grid-rows 0fr → 1fr collapse pattern        */
   /* ---------------------------------------------------------------- */
   .anim-enter {
@@ -224,6 +227,41 @@ html, body {
   }
 
   /*
+   * Call-ring: two concentric rings that scale-out from the button
+   * every ~1.6s (staggered by 0.8s) — reads as "phone dialling". Uses
+   * pseudo-elements so a single class on the button is enough.
+   */
+  .anim-call-ring {
+    position: relative;
+    isolation: isolate;
+  }
+  .anim-call-ring::before,
+  .anim-call-ring::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px solid currentColor;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+    animation: mta-call-ring 1.6s ease-out infinite;
+  }
+  .anim-call-ring::after {
+    animation-delay: 0.8s;
+  }
+
+  .anim-send-fly {
+    animation: mta-send-fly 900ms var(--ease-spring) forwards;
+  }
+
+  .anim-pulse-dot {
+    animation: mta-pulse-dot 1.2s ease-in-out infinite;
+  }
+  .anim-pulse-dot-2 { animation-delay: 0.15s; }
+  .anim-pulse-dot-3 { animation-delay: 0.3s; }
+
+  /*
    * Expand-row is the accessible way to animate height:auto without
    * measuring the DOM. Parent sets grid-template-rows via [data-open].
    */
@@ -238,6 +276,17 @@ html, body {
   }
   .expand-row[data-open="true"] {
     grid-template-rows: 1fr;
+  }
+
+  /* Hide the scrollbar chrome while still allowing overflow scroll —
+     used by scrollable tab bars where a visible scrollbar would break
+     the pill-row visual. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
 
@@ -268,6 +317,22 @@ html, body {
 @keyframes mta-count-roll {
   from { transform: translateY(60%); opacity: 0; }
   to   { transform: none;            opacity: 1; }
+}
+
+@keyframes mta-call-ring {
+  0%   { transform: scale(1);    opacity: 0.55; }
+  100% { transform: scale(1.55); opacity: 0;    }
+}
+
+@keyframes mta-send-fly {
+  0%   { transform: translate(0, 0)     rotate(0);    opacity: 1; }
+  50%  { transform: translate(20px, -14px) rotate(-25deg); opacity: 1; }
+  100% { transform: translate(60px, -46px) rotate(-45deg); opacity: 0; }
+}
+
+@keyframes mta-pulse-dot {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50%      { opacity: 1;    transform: translateY(-2px); }
 }
 
 /* Global respect for reduced motion. */

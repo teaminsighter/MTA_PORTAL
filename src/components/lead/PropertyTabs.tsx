@@ -1,34 +1,53 @@
 "use client";
 
 import { useState } from "react";
-import type { ActivityEvent, Comparable } from "@/lib/mock";
+import type {
+  ActivityEvent,
+  Comparable,
+  Lead,
+  PropertyFacts,
+} from "@/lib/mock";
 import { cn } from "@/lib/utils";
 import {
   formatDateNZ,
   formatMoneyNZ,
   formatRelative,
 } from "@/lib/utils";
+import { DataSourcesCard } from "@/components/lead/DataSourcesCard";
+import { PropertyReport } from "@/components/lead/PropertyReport";
 
 interface PropertyTabsProps {
+  lead: Lead;
+  property: PropertyFacts;
   comps: Comparable[];
   history: ActivityEvent[];
 }
 
-type Tab = "snapshot" | "nearby" | "history";
+type Tab = "snapshot" | "report" | "analysis" | "nearby" | "history";
 
 const TABS: Array<{ key: Tab; label: string }> = [
   { key: "snapshot", label: "Snapshot" },
+  { key: "report", label: "Report" },
+  { key: "analysis", label: "Analysis" },
   { key: "nearby", label: "Nearby sales" },
   { key: "history", label: "History" },
 ];
 
-export function PropertyTabs({ comps, history }: PropertyTabsProps) {
+export function PropertyTabs({
+  lead,
+  property,
+  comps,
+  history,
+}: PropertyTabsProps) {
   const [tab, setTab] = useState<Tab>("snapshot");
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Tab bar (neumorphic inset track, active tab is raised) */}
-      <div className="neu-inset-sm p-1 inline-flex self-start">
+      {/* Tab bar (neumorphic inset track, active tab is raised).
+          Horizontally scrollable when the left column is too narrow
+          to fit all five labels — hides the scrollbar on macOS/iOS
+          so it reads as a normal pill row until you swipe. */}
+      <div className="neu-inset-sm p-1 flex self-start max-w-full overflow-x-auto no-scrollbar">
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -37,7 +56,7 @@ export function PropertyTabs({ comps, history }: PropertyTabsProps) {
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
             className={cn(
-              "px-4 py-2 t-body rounded-neu-sm transition-colors",
+              "px-4 py-2 t-body rounded-neu-sm transition-colors whitespace-nowrap shrink-0",
               tab === t.key
                 ? "neu-raised-sm text-text font-semibold"
                 : "text-text-muted"
@@ -49,10 +68,41 @@ export function PropertyTabs({ comps, history }: PropertyTabsProps) {
       </div>
 
       {tab === "snapshot" ? <Snapshot comps={comps} /> : null}
+      {tab === "report" ? (
+        <PropertyReport lead={lead} property={property} />
+      ) : null}
+      {tab === "analysis" ? <Analysis property={property} /> : null}
       {tab === "nearby" ? <NearbyTable comps={comps} /> : null}
       {tab === "history" ? <History events={history} /> : null}
     </div>
   );
+}
+
+/* ------------------------------------------------------------------ */
+/* Analysis: cross-source data quality + valuation triangulation      */
+/* ------------------------------------------------------------------ */
+function Analysis({ property }: { property: PropertyFacts }) {
+  const hasAny =
+    property.cv ||
+    property.estimate ||
+    property.land_value ||
+    property.improvements ||
+    property.land_area ||
+    property.floor_area ||
+    property.bedrooms ||
+    property.year_built ||
+    property.last_sold_date ||
+    property.last_sold_price;
+
+  if (!hasAny) {
+    return (
+      <div className="surface-flat p-6 text-center text-text-muted t-body">
+        Nothing to analyse yet — enrichment is still in progress.
+      </div>
+    );
+  }
+
+  return <DataSourcesCard property={property} />;
 }
 
 /* ------------------------------------------------------------------ */
