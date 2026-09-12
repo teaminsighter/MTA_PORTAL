@@ -8,6 +8,14 @@ initOpenNextCloudflareForDev({ environment: "local" });
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  images: {
+    // picsum.photos is used as a deterministic-seed placeholder for
+    // the inbox preview hero photo until we wire real listing imagery.
+    remotePatterns: [
+      { protocol: "https", hostname: "picsum.photos" },
+      { protocol: "https", hostname: "fastly.picsum.photos" },
+    ],
+  },
 };
 
 export default nextConfig;

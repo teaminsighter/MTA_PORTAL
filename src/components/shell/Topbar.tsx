@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Eye, Search } from "lucide-react";
 import { isDemoMode } from "@/lib/demo/mode";
 
@@ -6,11 +7,17 @@ export function Topbar() {
 
   return (
     <header className="neu-raised px-4 py-3 flex items-center gap-4 sticky top-0 z-10">
-      <div className="lg:hidden flex items-center gap-2">
-        <div className="neu-raised-sm h-8 w-8 flex items-center justify-center">
-          <span className="accent-text font-bold t-body">M</span>
+      <div className="lg:hidden flex items-center">
+        <div className="relative h-8 w-24 shrink-0">
+          <Image
+            src="/logo-mta.png"
+            alt="My Top Agent"
+            fill
+            priority
+            sizes="96px"
+            className="object-contain object-left"
+          />
         </div>
-        <span className="accent-text font-bold t-default">MTA</span>
       </div>
 
       <div className="flex-1 max-w-xl">

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Inbox, LayoutGrid, ShieldCheck } from "lucide-react";
@@ -45,27 +46,36 @@ export function Sidebar() {
         "lg:overflow-hidden"
       )}
     >
-      {/* Brand mark. Icon always centred while collapsed; wordmark
-          appears + row left-aligns on hover. */}
+      {/* Brand mark. Square icon crop while collapsed; full horizontal
+          wordmark once the sidebar hover-expands. Two <Image>s so each
+          crop fits its container cleanly (object-contain on the same
+          asset would leave the wordmark tiny in the 36px square). */}
       <div
         className={cn(
-          "hidden lg:flex items-center gap-2 pb-4 min-w-0",
+          "hidden lg:flex items-center pb-4 min-w-0",
           "justify-center group-hover:justify-start"
         )}
       >
-        <div className="neu-raised-sm h-9 w-9 flex items-center justify-center shrink-0">
-          <span className="accent-text font-bold t-default">M</span>
+        <div className="neu-raised-sm h-9 w-9 flex items-center justify-center shrink-0 overflow-hidden group-hover:hidden">
+          <Image
+            src="/logo-mta.png"
+            alt="MTA"
+            width={72}
+            height={72}
+            priority
+            className="h-8 w-8 object-cover object-left"
+          />
         </div>
-        <span
-          className={cn(
-            "accent-text font-bold t-section whitespace-nowrap",
-            // Truly hidden while collapsed so it doesn't push the M
-            // off-centre.
-            "hidden group-hover:inline"
-          )}
-        >
-          MTA
-        </span>
+        <div className="hidden group-hover:block relative h-9 w-40 shrink-0">
+          <Image
+            src="/logo-mta.png"
+            alt="My Top Agent"
+            fill
+            priority
+            sizes="160px"
+            className="object-contain object-left"
+          />
+        </div>
       </div>
 
       {NAV.map(({ href, label, icon: Icon }) => {

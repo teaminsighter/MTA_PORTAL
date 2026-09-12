@@ -1,7 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
+import { useCallback } from "react";
 import {
   Activity,
   ArrowRight,
@@ -109,10 +111,14 @@ export function LeadPreview({ lead }: Props) {
       ? Math.round(est / property.floor_area.value)
       : null;
 
+  const heroImageUrl = `https://picsum.photos/seed/${encodeURIComponent(
+    full.id
+  )}/960/360`;
+
   return (
-    <div className="neu-raised p-6 flex flex-col gap-6 w-full anim-enter max-h-[calc(100dvh-8rem)] overflow-y-auto">
-      {/* ---------- Header ---------- */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="neu-raised p-6 flex flex-col gap-4 w-full anim-enter max-h-[calc(100dvh-8rem)]">
+      {/* ---------- Header (pinned) ---------- */}
+      <div className="flex items-start justify-between gap-4 shrink-0">
         <div className="min-w-0">
           <div className="flex items-center gap-2 t-caption text-text-muted">
             <MapPin size={12} />
@@ -126,8 +132,35 @@ export function LeadPreview({ lead }: Props) {
         <StateChip state={full.state} />
       </div>
 
+      {/* ---------- Scrolling body ---------- */}
+      <div
+        id="lead-preview-scroll"
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 -mr-2 pr-2"
+      >
       {/* ---------- Property snapshot (hero) ---------- */}
       <Section title="Property snapshot" icon={<Home size={12} />}>
+        {/* Hero photo — deterministic per lead so previews are stable. */}
+        <div className="relative h-40 w-full rounded-neu overflow-hidden surface-flat">
+          <Image
+            src={heroImageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="object-cover"
+            unoptimized
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)",
+            }}
+          />
+          <div className="absolute bottom-2 left-3 t-caption text-white/90 flex items-center gap-1">
+            <MapPin size={11} /> {full.address}
+          </div>
+        </div>
         {cv || est ? (
           <div className="surface-flat p-4 rounded-neu flex flex-col gap-3">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
@@ -245,32 +278,38 @@ export function LeadPreview({ lead }: Props) {
           label="Picked"
           value={counts.picked_agents}
           highlight={counts.picked_agents > 0}
+          targetId="picked-agents"
         />
         <CountPill
           icon={<Users size={12} />}
           label="Suggested"
           value={counts.suggested_agents}
+          href={`/leads/${full.id}#shortlist`}
         />
         <CountPill
           icon={<UserRound size={12} />}
           label="Candidates"
           value={counts.candidates}
+          href={`/leads/${full.id}#candidates`}
         />
         <CountPill
           icon={<Home size={12} />}
           label="Comparables"
           value={counts.comparables}
+          targetId="nearby-sales"
         />
         <CountPill
           icon={<Activity size={12} />}
           label="Activity"
           value={counts.activity}
+          targetId="recent-activity"
         />
       </div>
 
       {/* ---------- Nearby sales (comparables) ---------- */}
       {comparables.length > 0 ? (
         <Section
+          id="nearby-sales"
           title={`Nearby sales · top ${comparables.length}${
             counts.comparables > comparables.length
               ? ` of ${counts.comparables}`
@@ -347,6 +386,7 @@ export function LeadPreview({ lead }: Props) {
       {/* ---------- Picked agents ---------- */}
       {picked_agents.length > 0 ? (
         <Section
+          id="picked-agents"
           title={`Picked agents · ${counts.picked_agents}${
             counts.picked_agents > picked_agents.length
               ? ` (top ${picked_agents.length})`
@@ -386,7 +426,7 @@ export function LeadPreview({ lead }: Props) {
 
       {/* ---------- Recent activity ---------- */}
       {activity.length > 0 ? (
-        <Section title="Recent activity" icon={<Activity size={12} />}>
+        <Section id="recent-activity" title="Recent activity" icon={<Activity size={12} />}>
           <ol className="surface-flat divide-y rounded-neu">
             {activity.map((e, i) => (
               <li key={i} className="flex items-start gap-3 px-3 py-2">
@@ -407,9 +447,13 @@ export function LeadPreview({ lead }: Props) {
         </Section>
       ) : null}
 
-      {/* ---------- Primary CTA ---------- */}
-      <div className="pt-1">
-        <Link href={`/leads/${full.id}`} className="btn-accent-glass">
+      </div>
+      {/* ---------- Primary CTA (sticky footer) ---------- */}
+      <div className="shrink-0 pt-3 border-t">
+        <Link
+          href={`/leads/${full.id}`}
+          className="btn-accent-glass w-full justify-center"
+        >
           Open lead
           <ArrowRight size={16} />
         </Link>
@@ -421,16 +465,18 @@ export function LeadPreview({ lead }: Props) {
 /* ---------------- section wrapper ---------------- */
 
 function Section({
+  id,
   title,
   icon,
   children,
 }: {
+  id?: string;
   title: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-2">
+    <section id={id} className="flex flex-col gap-2 scroll-mt-2">
       <div className="t-caption text-text-subtle uppercase tracking-wide flex items-center gap-1">
         {icon}
         {title}
@@ -639,23 +685,60 @@ function CountPill({
   label,
   value,
   highlight,
+  targetId,
+  href,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
   highlight?: boolean;
+  /* Section id inside the preview pane — clicking scrolls to it. */
+  targetId?: string;
+  /* Full-lead workspace anchor for pills that have no preview section. */
+  href?: string;
 }) {
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-neu-pill neu-raised-sm",
-        highlight && "text-accent"
-      )}
-    >
+  const isInteractive = value > 0 && (targetId || href);
+  const scrollTo = useCallback(() => {
+    if (!targetId) return;
+    const scroller = document.getElementById("lead-preview-scroll");
+    const el = document.getElementById(targetId);
+    if (!scroller || !el) return;
+    const top = el.offsetTop - scroller.offsetTop;
+    scroller.scrollTo({ top, behavior: "smooth" });
+  }, [targetId]);
+
+  const cls = cn(
+    "flex items-center gap-2 px-3 py-1.5 rounded-neu-pill neu-raised-sm transition-transform",
+    isInteractive && "hover:-translate-y-0.5 hover:text-accent cursor-pointer",
+    !isInteractive && "opacity-70 cursor-default",
+    highlight && "text-accent"
+  );
+
+  const inner = (
+    <>
       {icon}
       <span className="t-caption uppercase tracking-wide">{label}</span>
       <span className="t-body font-semibold tabular">{value}</span>
-    </div>
+    </>
+  );
+
+  if (isInteractive && href) {
+    return (
+      <Link href={href} className={cls} aria-label={`${label}: ${value}`}>
+        {inner}
+      </Link>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={scrollTo}
+      disabled={!isInteractive}
+      className={cls}
+      aria-label={`${label}: ${value}`}
+    >
+      {inner}
+    </button>
   );
 }
 
