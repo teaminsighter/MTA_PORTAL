@@ -5,6 +5,8 @@ import { desc, ne, sql } from "drizzle-orm";
 import { getDb } from "@/db/client";
 import { leads as leadsTable, LEAD_STATES } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { isDemoMode } from "@/lib/demo/mode";
+import { demoListLeads } from "@/lib/demo/data";
 import type { Lead, LeadState } from "@/lib/mock";
 
 /*
@@ -26,6 +28,24 @@ export type InboxResponse = {
 };
 
 export async function GET() {
+  // Demo mode: no auth, no DB. Return mock data so the polling
+  // /api/inbox call from InboxClient + Sidebar succeeds without a
+  // signed-in session.
+  if (isDemoMode()) {
+    const leads = demoListLeads();
+    const by_state = Object.fromEntries(
+      LEAD_STATES.map((s) => [s, 0])
+    ) as Record<LeadState, number>;
+    for (const l of leads) {
+      if (l.state in by_state) by_state[l.state as LeadState] += 1;
+    }
+    return Response.json({
+      leads,
+      total: leads.length,
+      by_state,
+    } satisfies InboxResponse);
+  }
+
   const session = await auth();
   if (!session?.user) {
     return Response.json({ error: "unauthenticated" }, { status: 401 });

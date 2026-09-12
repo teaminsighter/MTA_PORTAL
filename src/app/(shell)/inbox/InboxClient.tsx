@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowRight, Filter, Inbox as InboxIcon } from "lucide-react";
+import { Filter, Inbox as InboxIcon } from "lucide-react";
 import type { Lead, LeadState } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
-import { StateChip } from "@/components/lead/StateChip";
+import { LeadPreview } from "@/components/lead/LeadPreview";
 import { EmptyState } from "@/components/states/EmptyState";
 import { ErrorState } from "@/components/states/ErrorState";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
-import { cn, formatRelative } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { InboxResponse } from "@/app/api/inbox/route";
 import {
   countUnread,
@@ -226,50 +225,10 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         ) : null}
       </section>
 
-      {/* Right pane — preview (desktop only) */}
+      {/* Right pane — rich preview (desktop only) */}
       <section className="hidden md:flex flex-1 min-w-0">
         {selected ? (
-          <div className="neu-raised p-6 flex flex-col gap-4 w-full">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="t-section">{selected.address}</h2>
-                <p className="t-body text-text-muted">
-                  {selected.vendor_name} · {selected.id}
-                </p>
-              </div>
-              <StateChip state={selected.state} />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="neu-inset-sm p-3">
-                <div className="t-caption text-text-subtle uppercase tracking-wide">
-                  Source
-                </div>
-                <div className="t-body font-medium">
-                  {selected.source === "web"
-                    ? "Web form"
-                    : selected.source === "ac_manual"
-                      ? "AC manual"
-                      : "AC import"}
-                </div>
-              </div>
-              <div className="neu-inset-sm p-3">
-                <div className="t-caption text-text-subtle uppercase tracking-wide">
-                  Received
-                </div>
-                <div className="t-body font-medium tabular">
-                  {formatRelative(selected.created_at)}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-2">
-              <Link href={`/leads/${selected.id}`} className="btn-accent-glass">
-                Open lead
-                <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
+          <LeadPreview lead={selected} />
         ) : (
           <EmptyState
             className="w-full"
