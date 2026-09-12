@@ -152,9 +152,14 @@ export function LeadShortlistColumn({ lead, onBack }: Props) {
                   }
                 }}
                 className={cn(
+                  // Base has a transparent left border so the picked
+                  // accent bar doesn't shift the row's width. Avoids
+                  // ring-* which was leaking past the scroll clip and
+                  // showing as an orange bar between rows.
                   "neu-raised-sm px-4 py-3 flex items-center justify-between gap-3 cursor-pointer transition-all",
+                  "border-l-4 border-l-transparent",
                   "hover:-translate-y-0.5",
-                  picked && "ring-2 ring-accent"
+                  picked && "border-l-accent bg-accent/[0.05]"
                 )}
                 aria-pressed={picked}
                 aria-label={`${a.name} — ${picked ? "picked" : "not picked"}`}

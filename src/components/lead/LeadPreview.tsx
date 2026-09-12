@@ -526,8 +526,10 @@ export function LeadPreview({ lead, onStartReview, hideCta }: Props) {
 
       {/* ---------- Bottom row: data sources · property image ---------- */}
       {/* Two lower-priority panels get equal room here, out of the way
-          of the primary triage data above. Stacks on narrow panes. */}
-      {property ? (
+          of the primary triage data above. Stacks on narrow panes.
+          hasFacts guard hides the empty "0 fields · 0% cross-matched"
+          card when a lead landed with no property enrichment. */}
+      {property && hasAnyFacts(property) ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Section
             id="data-sources"
@@ -870,6 +872,21 @@ function CountPill({
 function deltaPct(cv: number | null, est: number | null): number | null {
   if (cv === null || est === null || cv === 0) return null;
   return Math.round(((est - cv) / cv) * 100);
+}
+
+function hasAnyFacts(p: PropertyFacts): boolean {
+  return !!(
+    p.cv ||
+    p.estimate ||
+    p.land_value ||
+    p.improvements ||
+    p.land_area ||
+    p.floor_area ||
+    p.bedrooms ||
+    p.year_built ||
+    p.last_sold_date ||
+    p.last_sold_price
+  );
 }
 
 /* ---------------- data sources card ---------------- */
