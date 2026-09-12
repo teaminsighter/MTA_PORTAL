@@ -19,14 +19,15 @@ const NAV = [
 /*
  * Sidebar.
  *
- * Desktop: rest state is a 64px icon column; on hover the whole nav
- *   expands to 240px, revealing the brand mark + labels + count
- *   badge. Transition is width-only so the icons don't jump. The
- *   parent layout reserves 64px of left padding so main content
- *   doesn't reflow when the sidebar overlays it.
+ * Desktop: rest state is a 64px icon column with icons centred; on
+ *   hover the whole nav expands to 240px, revealing the brand
+ *   wordmark, labels, and the accent-gradient unread pill. Labels
+ *   are display:none while collapsed (not just opacity-0) so they
+ *   don't take up flex space and the icons sit dead-centre.
  * Mobile: rendered inside a bottom-fixed pill by the shell layout;
  *   collapsed styling doesn't apply because we're never in `group`
- *   scope there.
+ *   scope on mobile (the .group class is lg-only via the width
+ *   transition wrappers).
  */
 export function Sidebar() {
   const pathname = usePathname();
@@ -44,15 +45,23 @@ export function Sidebar() {
         "lg:overflow-hidden"
       )}
     >
-      {/* Brand mark. Icon always visible; wordmark fades in on hover. */}
-      <div className="hidden lg:flex items-center gap-2 pb-4 min-w-0">
+      {/* Brand mark. Icon always centred while collapsed; wordmark
+          appears + row left-aligns on hover. */}
+      <div
+        className={cn(
+          "hidden lg:flex items-center gap-2 pb-4 min-w-0",
+          "justify-center group-hover:justify-start"
+        )}
+      >
         <div className="neu-raised-sm h-9 w-9 flex items-center justify-center shrink-0">
           <span className="accent-text font-bold t-default">M</span>
         </div>
         <span
           className={cn(
             "accent-text font-bold t-section whitespace-nowrap",
-            "opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+            // Truly hidden while collapsed so it doesn't push the M
+            // off-centre.
+            "hidden group-hover:inline"
           )}
         >
           MTA
@@ -70,6 +79,9 @@ export function Sidebar() {
             href={href}
             className={cn(
               "flex items-center gap-3 rounded-neu-sm px-3 py-2 t-body font-medium transition-colors flex-1 lg:flex-none relative min-w-0",
+              // Centre the icon while collapsed; align-start once
+              // the label appears on hover.
+              "lg:justify-center lg:group-hover:justify-start",
               active
                 ? "neu-inset-sm text-accent"
                 : "text-text-muted hover:text-text"
@@ -79,15 +91,15 @@ export function Sidebar() {
           >
             <span className="relative inline-flex shrink-0">
               <Icon size={18} />
-              {/* Icon-only unread dot — visible while sidebar is collapsed
-                  on desktop or in mobile bottom bar. */}
+              {/* Icon-only unread dot — visible while sidebar is
+                  collapsed on desktop or in mobile bottom bar. */}
               {showBadge ? (
                 <span
                   aria-hidden
                   className={cn(
                     "absolute -top-1 -right-1 h-2 w-2 rounded-neu-pill bg-accent",
-                    // Hide the dot while the sidebar is expanded on
-                    // desktop (the pill count replaces it).
+                    // Hide the dot once the count pill shows up on
+                    // hover.
                     "lg:group-hover:hidden"
                   )}
                 />
@@ -96,8 +108,9 @@ export function Sidebar() {
             <span
               className={cn(
                 "whitespace-nowrap",
-                "hidden lg:inline",
-                "lg:opacity-0 lg:group-hover:opacity-100 lg:transition-opacity lg:duration-150"
+                // Fully hidden while collapsed so the icon centres
+                // properly, then reappears on hover.
+                "hidden lg:group-hover:inline"
               )}
             >
               {label}
@@ -105,10 +118,8 @@ export function Sidebar() {
             {showBadge ? (
               <span
                 className={cn(
-                  "hidden lg:inline-flex ml-auto items-center justify-center min-w-5 px-1.5 h-5 rounded-neu-pill t-caption font-semibold text-on-accent tabular",
-                  // Only reveal the pill count once expanded; the icon
-                  // dot handles collapsed state.
-                  "lg:opacity-0 lg:group-hover:opacity-100 lg:transition-opacity lg:duration-150"
+                  "ml-auto items-center justify-center min-w-5 px-1.5 h-5 rounded-neu-pill t-caption font-semibold text-on-accent tabular",
+                  "hidden lg:group-hover:inline-flex"
                 )}
                 style={{ background: "var(--accent-gradient)" }}
                 aria-label={`${unread} unread`}
