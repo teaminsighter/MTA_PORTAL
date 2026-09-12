@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Filter, Inbox as InboxIcon } from "lucide-react";
+import {
+  Filter,
+  Inbox as InboxIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import type { Lead, LeadState } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
 import { LeadPreview } from "@/components/lead/LeadPreview";
@@ -92,6 +97,9 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
   const [selectedId, setSelectedId] = useState<string>(
     initialLeads[0]?.id ?? ""
   );
+  // Left-rail collapse (desktop only) — lets the preview pane take
+  // the full width when Sarah wants a clear read of a single lead.
+  const [listCollapsed, setListCollapsed] = useState(false);
 
   // Prime the shared query cache with the SSR payload so the Sidebar
   // badge has data on first paint. The by_state/total fields don't
@@ -128,17 +136,56 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* Left rail — list */}
-      <section className="md:w-[420px] w-full flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-          <h1 className="t-display">Inbox</h1>
+      {/* Collapsed rail — desktop only. Renders in place of the list
+          so the toggle stays in the same spot to re-expand from. */}
+      {listCollapsed ? (
+        <aside className="hidden md:flex flex-col items-start pt-1 shrink-0">
           <button
             type="button"
-            aria-label="Filter"
-            className="md:hidden neu-raised-sm h-9 w-9 flex items-center justify-center text-text-muted"
+            onClick={() => setListCollapsed(false)}
+            className="neu-raised-sm h-9 w-9 flex items-center justify-center text-text-muted hover:text-accent"
+            aria-label="Show inbox list"
+            aria-expanded="false"
+            aria-controls="inbox-list"
+            title="Show inbox list"
           >
-            <Filter size={16} />
+            <PanelLeftOpen size={16} />
           </button>
+        </aside>
+      ) : null}
+
+      {/* Left rail — list */}
+      <section
+        id="inbox-list"
+        className={cn(
+          "md:w-[420px] w-full flex flex-col gap-3",
+          listCollapsed && "hidden md:hidden"
+        )}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <h1 className="t-display">Inbox</h1>
+          <div className="flex items-center gap-2">
+            {/* Collapse toggle — desktop only. Hides the whole rail
+                so the preview pane can use the full width. */}
+            <button
+              type="button"
+              onClick={() => setListCollapsed(true)}
+              className="hidden md:flex neu-raised-sm h-9 w-9 items-center justify-center text-text-muted hover:text-accent"
+              aria-label="Hide inbox list"
+              aria-expanded="true"
+              aria-controls="inbox-list"
+              title="Hide inbox list"
+            >
+              <PanelLeftClose size={16} />
+            </button>
+            <button
+              type="button"
+              aria-label="Filter"
+              className="md:hidden neu-raised-sm h-9 w-9 flex items-center justify-center text-text-muted"
+            >
+              <Filter size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
