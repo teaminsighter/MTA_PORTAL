@@ -14,6 +14,7 @@ import {
   Mail,
   MapPin,
   MessageSquare,
+  Pencil,
   Phone,
   Ruler,
   TrendingUp,
@@ -52,16 +53,6 @@ import {
 
 interface Props {
   lead: Lead;
-  /* Wire the CTA to advance the inbox wizard stage instead of
-     navigating to /leads/[id]. If absent, falls back to a Link. */
-  onStartReview?: () => void;
-  /* When the pane is being used as the compact "context" column
-     during the shortlist stage, we don't need a second CTA. */
-  hideCta?: boolean;
-  /* Same context column doesn't want the Data Sources / Property
-     Image bottom row either — the shortlist column beside it needs
-     the operator's attention, not decorative context. */
-  hideBottomRow?: boolean;
 }
 
 const EMPTY_COUNTS: LeadPreviewData["counts"] = {
@@ -78,12 +69,7 @@ const CONFIDENCE_TONE: Record<AgentCandidate["confidence"], string> = {
   low: "chip-neutral",
 };
 
-export function LeadPreview({
-  lead,
-  onStartReview,
-  hideCta,
-  hideBottomRow,
-}: Props) {
+export function LeadPreview({ lead }: Props) {
   const query = useQuery<LeadPreviewData>({
     queryKey: ["inbox-preview", lead.id],
     queryFn: async () => {
@@ -160,7 +146,18 @@ export function LeadPreview({
             <UserRound size={13} /> {full.vendor_name}
           </div>
         </div>
-        <StateChip state={full.state} />
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <StateChip state={full.state} />
+          <Link
+            href={`/leads/${full.id}`}
+            className="neu-raised-sm px-2.5 py-1 flex items-center gap-1.5 t-caption text-text-muted hover:text-accent"
+            aria-label="Edit lead in workspace"
+            title="Edit lead in workspace"
+          >
+            <Pencil size={12} />
+            Edit
+          </Link>
+        </div>
       </div>
 
       {/* ---------- Scrolling body ---------- */}
@@ -538,7 +535,7 @@ export function LeadPreview({
           of the primary triage data above. Stacks on narrow panes.
           hasFacts guard hides the empty "0 fields · 0% cross-matched"
           card when a lead landed with no property enrichment. */}
-      {!hideBottomRow && property && hasAnyFacts(property) ? (
+      {property && hasAnyFacts(property) ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Section
             id="data-sources"
@@ -576,24 +573,13 @@ export function LeadPreview({
 
       </div>
       {/* ---------- Primary CTA (floats bottom-right over scroll) ---------- */}
-      {hideCta ? null : onStartReview ? (
-        <button
-          type="button"
-          onClick={onStartReview}
-          className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
-        >
-          Start review
-          <ArrowRight size={16} />
-        </button>
-      ) : (
-        <Link
-          href={`/leads/${full.id}`}
-          className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
-        >
-          Start review
-          <ArrowRight size={16} />
-        </Link>
-      )}
+      <Link
+        href={`/leads/${full.id}`}
+        className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
+      >
+        Start review
+        <ArrowRight size={16} />
+      </Link>
     </div>
   );
 }

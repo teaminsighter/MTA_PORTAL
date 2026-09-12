@@ -11,7 +11,6 @@ import {
 import type { Lead, LeadState } from "@/lib/mock";
 import { LeadCard } from "@/components/lead/LeadCard";
 import { LeadPreview } from "@/components/lead/LeadPreview";
-import { LeadShortlistColumn } from "@/components/lead/LeadShortlistColumn";
 import { EmptyState } from "@/components/states/EmptyState";
 import { ErrorState } from "@/components/states/ErrorState";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
@@ -101,16 +100,6 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
   // Left-rail collapse (desktop only) — lets the preview pane take
   // the full width when Sarah wants a clear read of a single lead.
   const [listCollapsed, setListCollapsed] = useState(false);
-  // Wizard stage. "preview" is the default triage view; "shortlist"
-  // is the second stage where Sarah calls / picks agents. Every
-  // future stage (dispatch, responses) becomes another value here.
-  const [stage, setStage] = useState<"preview" | "shortlist">("preview");
-
-  // Switching leads always drops back to the preview stage — Sarah
-  // reviews a lead before deciding to contact its agents.
-  useEffect(() => {
-    setStage("preview");
-  }, [selectedId]);
 
   // Prime the shared query cache with the SSR payload so the Sidebar
   // badge has data on first paint. The by_state/total fields don't
@@ -147,8 +136,8 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* ---------- Preview stage: collapsed rail toggle (desktop) ---------- */}
-      {stage === "preview" && listCollapsed ? (
+      {/* ---------- Collapsed rail toggle (desktop) ---------- */}
+      {listCollapsed ? (
         <aside className="hidden md:flex flex-col items-start pt-1 shrink-0">
           <button
             type="button"
@@ -164,15 +153,14 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         </aside>
       ) : null}
 
-      {/* Left rail — list. Collapses to 0 width during the shortlist
-          stage (and when the operator toggles it hidden) so the two
-          active columns get the full screen. */}
+      {/* Left rail — list. Collapses to 0 width when the operator
+          toggles it hidden so the preview pane takes the full screen. */}
       <section
         id="inbox-list"
         className={cn(
           "w-full flex flex-col gap-3 overflow-hidden",
           "md:transition-[width,opacity] md:duration-300 md:ease-out md:shrink-0",
-          stage === "shortlist" || listCollapsed
+          listCollapsed
             ? "md:w-0 md:opacity-0 md:pointer-events-none md:hidden"
             : "md:w-[420px] md:opacity-100"
         )}
@@ -287,23 +275,12 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         ) : null}
       </section>
 
-      {/* Right pane — either the property preview (stage=preview) or
-          the shortlist / call surface (stage=shortlist). sticky +
-          self-start pin it while the (hidden or visible) inbox list
-          scrolls independently. */}
+      {/* Right pane — property preview. sticky + self-start pin it
+          while the (hidden or visible) inbox list scrolls
+          independently. Start review CTA navigates to /leads/[id]. */}
       <section className="hidden md:flex flex-1 min-w-0 md:sticky md:top-4 md:self-start">
         {selected ? (
-          stage === "preview" ? (
-            <LeadPreview
-              lead={selected}
-              onStartReview={() => setStage("shortlist")}
-            />
-          ) : (
-            <LeadShortlistColumn
-              lead={selected}
-              onBack={() => setStage("preview")}
-            />
-          )
+          <LeadPreview lead={selected} />
         ) : (
           <EmptyState
             className="w-full"
