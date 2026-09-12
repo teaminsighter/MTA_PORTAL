@@ -5,16 +5,24 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Check,
+  MapPin,
   MessageSquare,
   Phone,
   Send,
+  UserPlus,
   Users,
 } from "lucide-react";
 import type { LeadPreview as LeadPreviewData } from "@/app/api/inbox/[id]/route";
-import type { Agent, Lead } from "@/lib/mock";
+import type { Agent, AgentCandidate, Lead } from "@/lib/mock";
 import { ErrorState } from "@/components/states/ErrorState";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
 import { cn } from "@/lib/utils";
+
+const CONFIDENCE_TONE: Record<AgentCandidate["confidence"], string> = {
+  high: "chip-success",
+  medium: "chip-info",
+  low: "chip-neutral",
+};
 
 /*
  * Shortlist column — the second stage of the inbox wizard.
@@ -58,6 +66,9 @@ export function LeadShortlistColumn({ lead, onBack }: Props) {
     const combined = [...data.picked_agents, ...data.suggested_agents];
     return combined.filter((a) => (seen.has(a.id) ? false : (seen.add(a.id), true)));
   }, [query.data]);
+
+  const candidates: AgentCandidate[] = query.data?.candidates ?? [];
+  const suggestedCount = query.data?.counts.suggested_agents ?? agents.length;
 
   // Seed picks from the server payload's picked_agents so the operator
   // continues from where they were, then let local toggles take over.
@@ -128,6 +139,12 @@ export function LeadShortlistColumn({ lead, onBack }: Props) {
             <h2 className="t-section leading-tight truncate">{lead.address}</h2>
           </div>
         </div>
+        <div className="t-caption text-text-muted tabular shrink-0 pt-1">
+          <span className="text-text font-semibold">{pickedIds.size}</span>{" "}
+          picked ·{" "}
+          <span className="text-text font-semibold">{suggestedCount}</span>{" "}
+          suggested
+        </div>
       </div>
 
       {/* Scrolling body */}
@@ -164,12 +181,29 @@ export function LeadShortlistColumn({ lead, onBack }: Props) {
                 aria-pressed={picked}
                 aria-label={`${a.name} — ${picked ? "picked" : "not picked"}`}
               >
-                <div className="min-w-0 flex flex-col gap-0.5">
-                  <div className="t-body font-semibold truncate">{a.name}</div>
-                  <div className="t-caption text-text-muted truncate">
-                    {a.agency}
-                    {" · "}
-                    <span className="tabular">{a.sales_last_12mo} sales · {a.nearby_sales} nearby</span>
+                <div className="min-w-0 flex items-center gap-3 flex-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="t-body font-semibold truncate">
+                      {a.name}
+                    </div>
+                    <div className="t-caption text-text-muted truncate">
+                      {a.agency}
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                    {a.membership_status === "signed" ? (
+                      <span className="chip chip-success">Signed</span>
+                    ) : a.membership_status === "verbally_agreed" ? (
+                      <span className="chip chip-warning">Verbal</span>
+                    ) : null}
+                    {a.sms_permission ? (
+                      <span className="chip chip-info flex items-center gap-1">
+                        <MessageSquare size={11} /> SMS
+                      </span>
+                    ) : null}
+                    <span className="chip chip-neutral tabular">
+                      {a.nearby_sales} nearby
+                    </span>
                   </div>
                 </div>
                 <div
@@ -213,6 +247,52 @@ export function LeadShortlistColumn({ lead, onBack }: Props) {
             );
           })
         )}
+
+        {/* --- Candidates from nearby sales --- */}
+        {candidates.length > 0 ? (
+          <div className="pt-4 flex flex-col gap-2">
+            <div className="t-caption text-text-subtle uppercase tracking-wide flex items-center gap-1">
+              <UserPlus size={12} /> Candidates from nearby sales ·{" "}
+              {candidates.length}
+            </div>
+            {candidates.map((c) => (
+              <div
+                key={c.id}
+                className="neu-raised-sm px-4 py-3 flex items-center justify-between gap-3 border-l-4 border-l-transparent"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="t-body font-semibold truncate">{c.name}</div>
+                  <div className="t-caption text-text-muted truncate">
+                    {c.agency}
+                    {c.reason_hint ? (
+                      <>
+                        {" · "}
+                        <span>{c.reason_hint}</span>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span
+                    className={cn("chip", CONFIDENCE_TONE[c.confidence])}
+                    title={`Match confidence: ${c.confidence}`}
+                  >
+                    {c.confidence}
+                  </span>
+                  <a
+                    href={`tel:${c.phone.replace(/\s+/g, "")}`}
+                    className="btn-accent-glass"
+                    aria-label={`Call ${c.name}`}
+                    title={`Call ${c.name} (${c.phone})`}
+                  >
+                    <Phone size={14} />
+                    Call
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       {/* Floating send bar */}

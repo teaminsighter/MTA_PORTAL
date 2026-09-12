@@ -160,7 +160,9 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         )}
         aria-hidden={stage !== "shortlist"}
       >
-        {selected ? <LeadPreview lead={selected} hideCta /> : null}
+        {selected ? (
+          <LeadPreview lead={selected} hideCta hideBottomRow />
+        ) : null}
       </section>
 
       {/* ---------- Preview stage: collapsed rail toggle (desktop) ---------- */}

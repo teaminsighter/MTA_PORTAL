@@ -58,6 +58,10 @@ interface Props {
   /* When the pane is being used as the compact "context" column
      during the shortlist stage, we don't need a second CTA. */
   hideCta?: boolean;
+  /* Same context column doesn't want the Data Sources / Property
+     Image bottom row either — the shortlist column beside it needs
+     the operator's attention, not decorative context. */
+  hideBottomRow?: boolean;
 }
 
 const EMPTY_COUNTS: LeadPreviewData["counts"] = {
@@ -74,7 +78,12 @@ const CONFIDENCE_TONE: Record<AgentCandidate["confidence"], string> = {
   low: "chip-neutral",
 };
 
-export function LeadPreview({ lead, onStartReview, hideCta }: Props) {
+export function LeadPreview({
+  lead,
+  onStartReview,
+  hideCta,
+  hideBottomRow,
+}: Props) {
   const query = useQuery<LeadPreviewData>({
     queryKey: ["inbox-preview", lead.id],
     queryFn: async () => {
@@ -529,7 +538,7 @@ export function LeadPreview({ lead, onStartReview, hideCta }: Props) {
           of the primary triage data above. Stacks on narrow panes.
           hasFacts guard hides the empty "0 fields · 0% cross-matched"
           card when a lead landed with no property enrichment. */}
-      {property && hasAnyFacts(property) ? (
+      {!hideBottomRow && property && hasAnyFacts(property) ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Section
             id="data-sources"
