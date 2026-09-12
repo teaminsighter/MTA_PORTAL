@@ -272,8 +272,11 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
         ) : null}
       </section>
 
-      {/* Right pane — rich preview (desktop only) */}
-      <section className="hidden md:flex flex-1 min-w-0">
+      {/* Right pane — rich preview (desktop only).
+          sticky + self-start so the pane stays pinned in view while
+          the left inbox list scrolls the page. Topbar is ~4rem inside
+          a p-4 shell → top-4 lines up neatly under it. */}
+      <section className="hidden md:flex flex-1 min-w-0 md:sticky md:top-4 md:self-start">
         {selected ? (
           <LeadPreview lead={selected} />
         ) : (
