@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Inbox, LayoutGrid, ShieldCheck } from "lucide-react";
@@ -46,39 +45,8 @@ export function Sidebar() {
         "lg:overflow-hidden"
       )}
     >
-      {/* Brand mark. Square icon crop while collapsed; full horizontal
-          wordmark once the sidebar hover-expands. Two <Image>s so each
-          crop fits its container cleanly (object-contain on the same
-          asset would leave the wordmark tiny in the 36px square). */}
-      <div
-        className={cn(
-          "hidden lg:flex items-center pb-4 min-w-0",
-          "justify-center group-hover:justify-start"
-        )}
-      >
-        <div
-          className="neu-raised-sm h-9 w-9 shrink-0 group-hover:hidden bg-no-repeat"
-          role="img"
-          aria-label="MTA"
-          style={{
-            // Zoom the horizontal logo and pan to the icon cluster
-            // (house + people) so the wordmark below is cropped out.
-            backgroundImage: "url(/logo-mta.png)",
-            backgroundSize: "180% auto",
-            backgroundPosition: "38% 22%",
-          }}
-        />
-        <div className="hidden group-hover:block relative h-9 w-40 shrink-0">
-          <Image
-            src="/logo-mta.png"
-            alt="My Top Agent"
-            fill
-            priority
-            sizes="160px"
-            className="object-contain object-left"
-          />
-        </div>
-      </div>
+      {/* Brand lives on the Topbar now — sidebar is nav-only so it
+          reads cleanly when collapsed to the 64px icon column. */}
 
       {NAV.map(({ href, label, icon: Icon }) => {
         const active =

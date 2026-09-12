@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Eye, Search } from "lucide-react";
 import { isDemoMode } from "@/lib/demo/mode";
 
@@ -7,18 +8,23 @@ export function Topbar() {
 
   return (
     <header className="neu-raised px-4 py-3 flex items-center gap-4 sticky top-0 z-10">
-      <div className="lg:hidden flex items-center">
-        <div className="relative h-8 w-24 shrink-0">
-          <Image
-            src="/logo-mta.png"
-            alt="My Top Agent"
-            fill
-            priority
-            sizes="96px"
-            className="object-contain object-left"
-          />
-        </div>
-      </div>
+      {/* Brand — full horizontal logo, always visible. Lives on the
+          topbar (not the sidebar) so it stays legible when the nav
+          rail collapses to icons. */}
+      <Link
+        href="/inbox"
+        aria-label="My Top Agent — home"
+        className="relative h-9 w-28 sm:w-36 shrink-0 block"
+      >
+        <Image
+          src="/logo-mta.png"
+          alt="My Top Agent"
+          fill
+          priority
+          sizes="(min-width: 640px) 144px, 112px"
+          className="object-contain object-left"
+        />
+      </Link>
 
       <div className="flex-1 max-w-xl">
         <label className="relative block">
