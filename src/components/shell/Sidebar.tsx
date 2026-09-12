@@ -56,16 +56,18 @@ export function Sidebar() {
           "justify-center group-hover:justify-start"
         )}
       >
-        <div className="neu-raised-sm h-9 w-9 flex items-center justify-center shrink-0 overflow-hidden group-hover:hidden">
-          <Image
-            src="/logo-mta.png"
-            alt="MTA"
-            width={72}
-            height={72}
-            priority
-            className="h-8 w-8 object-cover object-left"
-          />
-        </div>
+        <div
+          className="neu-raised-sm h-9 w-9 shrink-0 group-hover:hidden bg-no-repeat"
+          role="img"
+          aria-label="MTA"
+          style={{
+            // Zoom the horizontal logo and pan to the icon cluster
+            // (house + people) so the wordmark below is cropped out.
+            backgroundImage: "url(/logo-mta.png)",
+            backgroundSize: "180% auto",
+            backgroundPosition: "38% 22%",
+          }}
+        />
         <div className="hidden group-hover:block relative h-9 w-40 shrink-0">
           <Image
             src="/logo-mta.png"

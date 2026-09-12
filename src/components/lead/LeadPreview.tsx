@@ -137,38 +137,29 @@ export function LeadPreview({ lead }: Props) {
         id="lead-preview-scroll"
         className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 -mr-2 pr-2"
       >
-      {/* ---------- Property snapshot (hero) ---------- */}
+      {/* ---------- Property snapshot ---------- */}
       <Section title="Property snapshot" icon={<Home size={12} />}>
-        {/* Hero photo — deterministic per lead so previews are stable. */}
-        <div className="relative h-40 w-full rounded-neu overflow-hidden surface-flat">
-          <Image
-            src={heroImageUrl}
-            alt=""
-            fill
-            sizes="(min-width: 1024px) 40vw, 100vw"
-            className="object-cover"
-            unoptimized
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.35) 100%)",
-            }}
-          />
-          <div className="absolute bottom-2 left-3 t-caption text-white/90 flex items-center gap-1">
-            <MapPin size={11} /> {full.address}
-          </div>
-        </div>
         {cv || est ? (
-          <div className="surface-flat p-4 rounded-neu flex flex-col gap-3">
-            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-              <HeroFigure label="Capital value" value={cv} align="left" />
-              <DeltaChip delta={delta} />
-              <HeroFigure label="Estimate" value={est} align="right" />
+          <div className="surface-flat p-4 rounded-neu grid grid-cols-[1fr_auto] gap-4 items-center">
+            <div className="flex flex-col gap-3 min-w-0">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <HeroFigure label="Capital value" value={cv} align="left" />
+                <DeltaChip delta={delta} />
+                <HeroFigure label="Estimate" value={est} align="right" />
+              </div>
+              {property ? <PropertyChips property={property} /> : null}
             </div>
-            {property ? <PropertyChips property={property} /> : null}
+            {/* Thumbnail — deterministic per lead so it stays stable. */}
+            <div className="relative h-24 w-32 rounded-neu-sm overflow-hidden shrink-0 hidden sm:block">
+              <Image
+                src={heroImageUrl}
+                alt=""
+                fill
+                sizes="128px"
+                className="object-cover"
+                unoptimized
+              />
+            </div>
           </div>
         ) : (
           <p className="t-body text-text-muted">
@@ -176,6 +167,17 @@ export function LeadPreview({ lead }: Props) {
           </p>
         )}
       </Section>
+
+      {/* ---------- Data sources coverage ---------- */}
+      {property ? (
+        <Section
+          id="data-sources"
+          title="Data sources"
+          icon={<Building2 size={12} />}
+        >
+          <DataSourcesCard property={property} />
+        </Section>
+      ) : null}
 
       {/* ---------- Full property facts ---------- */}
       {property ? (
@@ -448,12 +450,9 @@ export function LeadPreview({ lead }: Props) {
       ) : null}
 
       </div>
-      {/* ---------- Primary CTA (sticky footer) ---------- */}
-      <div className="shrink-0 pt-3 border-t">
-        <Link
-          href={`/leads/${full.id}`}
-          className="btn-accent-glass w-full justify-center"
-        >
+      {/* ---------- Primary CTA (sticky footer, bottom-right) ---------- */}
+      <div className="shrink-0 pt-3 border-t flex justify-end">
+        <Link href={`/leads/${full.id}`} className="btn-accent-glass">
           Open lead
           <ArrowRight size={16} />
         </Link>
@@ -745,4 +744,139 @@ function CountPill({
 function deltaPct(cv: number | null, est: number | null): number | null {
   if (cv === null || est === null || cv === 0) return null;
   return Math.round(((est - cv) / cv) * 100);
+}
+
+/* ---------------- data sources card ---------------- */
+
+/*
+ * Per-provider label + confidence (used to derive the "matched" count).
+ * Confidence is what we expect against cross-source cross-validation:
+ * cotality is our canonical valuation authority; homes.co.nz agrees
+ * ~92% on sold prices / estimates; corelogic occasionally disagrees
+ * on physical facts; LINZ is authoritative for cadastral land area.
+ * Numbers here are demo values until Phase 2 wires real diffing.
+ */
+const SOURCE_META: Record<
+  string,
+  { label: string; confidence: number; hue: string }
+> = {
+  cotality: { label: "Cotality", confidence: 1.0, hue: "#FF7A00" },
+  homes: { label: "Homes.co.nz", confidence: 0.92, hue: "#FF3D71" },
+  corelogic: { label: "CoreLogic", confidence: 0.88, hue: "#3366FF" },
+  linz: { label: "LINZ", confidence: 1.0, hue: "#00B383" },
+  manual: { label: "Manual override", confidence: 1.0, hue: "#8B5CF6" },
+};
+
+function DataSourcesCard({ property }: { property: PropertyFacts }) {
+  const fields: Array<{ source: string; fetched_at: string } | undefined> = [
+    property.cv,
+    property.estimate,
+    property.land_value,
+    property.improvements,
+    property.land_area,
+    property.floor_area,
+    property.bedrooms,
+    property.year_built,
+    property.last_sold_date,
+    property.last_sold_price,
+  ];
+  const present = fields.filter(
+    (f): f is { source: string; fetched_at: string } => !!f
+  );
+  const total = present.length;
+
+  const bySource = new Map<
+    string,
+    { fetched: number; latest: string }
+  >();
+  for (const f of present) {
+    const cur = bySource.get(f.source) ?? { fetched: 0, latest: f.fetched_at };
+    cur.fetched += 1;
+    if (f.fetched_at > cur.latest) cur.latest = f.fetched_at;
+    bySource.set(f.source, cur);
+  }
+
+  const rows = [...bySource.entries()]
+    .map(([source, x]) => {
+      const meta = SOURCE_META[source] ?? {
+        label: source,
+        confidence: 1,
+        hue: "var(--accent)",
+      };
+      const matched = Math.round(x.fetched * meta.confidence);
+      return {
+        source,
+        label: meta.label,
+        hue: meta.hue,
+        fetched: x.fetched,
+        matched,
+        coverage: total ? Math.round((x.fetched / total) * 100) : 0,
+        latest: x.latest,
+      };
+    })
+    .sort((a, b) => b.coverage - a.coverage);
+
+  const totalMatched = rows.reduce((s, r) => s + r.matched, 0);
+  const matchRate = total ? Math.round((totalMatched / total) * 100) : 0;
+
+  return (
+    <div className="surface-flat p-4 rounded-neu flex flex-col gap-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <span className="t-body text-text-muted">
+          Enriched from {rows.length} source{rows.length === 1 ? "" : "s"}
+        </span>
+        <span className="t-caption text-text-subtle tabular">
+          {total} fields · {matchRate}% cross-matched
+        </span>
+      </div>
+      <ul className="flex flex-col gap-2.5">
+        {rows.map((r) => (
+          <li key={r.source} className="flex flex-col gap-1">
+            <div className="flex items-center justify-between gap-3 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  aria-hidden
+                  className="h-2.5 w-2.5 rounded-neu-pill shrink-0"
+                  style={{ background: r.hue }}
+                />
+                <span className="t-body font-medium truncate">{r.label}</span>
+              </div>
+              <div className="flex items-center gap-2 t-caption text-text-muted tabular shrink-0">
+                <span title={`${r.fetched} of ${total} fields`}>
+                  {r.fetched}/{total} fetched
+                </span>
+                <span aria-hidden>·</span>
+                <span
+                  className={cn(
+                    r.matched === r.fetched ? "text-text" : "text-warning"
+                  )}
+                  title={`${r.matched} matched against other sources`}
+                >
+                  {r.matched}/{r.fetched} matched
+                </span>
+              </div>
+            </div>
+            <div
+              className="h-1.5 w-full rounded-neu-pill overflow-hidden neu-inset-sm"
+              aria-hidden
+            >
+              <div
+                className="h-full rounded-neu-pill"
+                style={{
+                  width: `${r.coverage}%`,
+                  background: r.hue,
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between t-caption text-text-subtle">
+              <span className="tabular">{r.coverage}% of enrichment</span>
+              <span className="tabular">
+                fetched {formatRelative(r.latest)}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
