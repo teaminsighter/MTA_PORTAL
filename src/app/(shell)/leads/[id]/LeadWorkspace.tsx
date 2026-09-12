@@ -219,11 +219,16 @@ export default function LeadWorkspace({
             railCollapsed && "md:[&>[data-col=right]]:col-span-1 md:[&>[data-col=centre]]:col-span-6 md:[&>[data-col=left]]:col-span-5"
           )}
         >
-          {/* ---------- LEFT: property ---------- */}
+          {/* ---------- LEFT: property ----------
+              Each column becomes its own sticky, viewport-height,
+              internally-scrollable pane on md+. Scrolling inside the
+              Report tab no longer drags the shortlist along — the
+              workspace reads like an app, not a document. */}
           <section
             data-col="left"
             className={cn(
               "md:col-span-4 flex flex-col gap-6",
+              "md:sticky md:top-4 md:self-start md:max-h-[calc(100dvh-8rem)] md:overflow-y-auto md:pr-1 md:pb-2",
               tab === "property" ? "block" : "hidden md:flex"
             )}
           >
@@ -247,6 +252,7 @@ export default function LeadWorkspace({
             data-col="centre"
             className={cn(
               "md:col-span-5 flex flex-col gap-4",
+              "md:sticky md:top-4 md:self-start md:max-h-[calc(100dvh-8rem)] md:overflow-y-auto md:pr-1 md:pb-2",
               tab === "agents" ? "block" : "hidden md:flex"
             )}
           >
@@ -307,6 +313,7 @@ export default function LeadWorkspace({
             data-col="right"
             className={cn(
               "md:col-span-3",
+              "md:sticky md:top-4 md:self-start md:max-h-[calc(100dvh-8rem)] md:overflow-y-auto md:pr-1 md:pb-2",
               tab === "vendor" ? "block" : "hidden md:block"
             )}
           >

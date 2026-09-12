@@ -14,6 +14,7 @@ import {
   UserRound,
 } from "lucide-react";
 import type { Lead, PropertyFacts } from "@/lib/mock";
+import { LocationMap } from "@/components/lead/LocationMap";
 import {
   cn,
   formatDateNZ,
@@ -293,69 +294,9 @@ function LocationCard({
     { label: "Country", value: "New Zealand" },
   ].filter((c): c is { label: string; value: string } => !!c);
 
-  const osmSearch = `https://www.openstreetmap.org/search?query=${encodeURIComponent(
-    address
-  )}`;
-
   return (
     <div className="surface-flat rounded-neu overflow-hidden">
-      {/* Decorative map-like tile: layered gradients + grid + pin.
-          No external tile server required — reads as "location" at
-          a glance without pulling live map data during demo. */}
-      <div
-        className="relative w-full aspect-[16/9] flex items-center justify-center"
-        style={{
-          background:
-            "linear-gradient(135deg, #E8ECF2 0%, #F5F7FA 100%)",
-        }}
-        aria-hidden
-      >
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage:
-              "linear-gradient(0deg, rgba(0,0,0,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.08) 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        <div
-          className="absolute"
-          style={{
-            width: 260,
-            height: 12,
-            top: "52%",
-            left: "18%",
-            background:
-              "linear-gradient(90deg, rgba(255,122,0,0.0), rgba(255,122,0,0.6), rgba(255,122,0,0.0))",
-            borderRadius: 6,
-            transform: "rotate(-8deg)",
-          }}
-        />
-        <div
-          className="absolute"
-          style={{
-            width: 180,
-            height: 8,
-            top: "38%",
-            left: "45%",
-            background:
-              "linear-gradient(90deg, rgba(51,102,255,0.0), rgba(51,102,255,0.55), rgba(51,102,255,0.0))",
-            borderRadius: 4,
-            transform: "rotate(14deg)",
-          }}
-        />
-        <div className="relative flex flex-col items-center gap-1">
-          <span
-            className="relative flex h-9 w-9 items-center justify-center rounded-neu-pill text-on-accent shadow-lg anim-call-ring"
-            style={{ background: "var(--accent-gradient)" }}
-          >
-            <MapPin size={16} />
-          </span>
-          <span className="t-caption font-semibold text-text bg-white/85 px-2 py-0.5 rounded-neu-sm">
-            {location.suburb ?? "This property"}
-          </span>
-        </div>
-      </div>
+      <LocationMap address={address} suburb={location.suburb} />
       <div className="p-4 flex flex-col gap-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {location.street ? (
@@ -382,14 +323,6 @@ function LocationCard({
             </span>
           ))}
         </div>
-        <a
-          href={osmSearch}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="t-caption text-accent hover:underline self-start"
-        >
-          Open in OpenStreetMap ↗
-        </a>
       </div>
     </div>
   );
