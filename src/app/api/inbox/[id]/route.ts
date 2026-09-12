@@ -9,19 +9,37 @@ import { listComparablesForLead } from "@/lib/repo/comparables";
 import { getShortlistForLead } from "@/lib/repo/agents";
 import { listCandidatesForLead } from "@/lib/repo/candidates";
 import { listActivityForLead } from "@/lib/repo/activity";
-import type { Lead, PropertyFacts } from "@/lib/mock";
+import type {
+  ActivityEvent,
+  Agent,
+  Comparable,
+  Lead,
+  PropertyFacts,
+} from "@/lib/mock";
 
 /*
- * GET /api/inbox/[id] — quick preview payload for the inbox right
- * pane. Everything Sarah needs to decide whether to open the full
- * workspace: headline property numbers, pick counts, activity count,
- * comparables count. Deliberately trimmer than /leads/[id] so the
- * preview loads fast on hover / click.
+ * GET /api/inbox/[id] — rich preview payload for the inbox right pane.
+ *
+ * Returns everything Sarah needs to triage the lead without opening
+ * the full workspace:
+ *   - full property facts (with provenance)
+ *   - top 5 nearby sales
+ *   - top 5 picked agents (with contact info)
+ *   - top 5 recent activity events
+ *   - counts across every dimension
+ *
+ * Bounded — /leads/[id] is still the source of truth for the deep-
+ * dive editing workflow.
  */
+
+const PREVIEW_LIMIT = 5;
 
 export type LeadPreview = {
   lead: Lead;
   property: PropertyFacts | null;
+  picked_agents: Agent[];
+  comparables: Comparable[];
+  activity: ActivityEvent[];
   counts: {
     picked_agents: number;
     suggested_agents: number;
@@ -56,11 +74,25 @@ export async function GET(_req: Request, { params }: Params) {
     ]);
   if (!lead) return Response.json({ error: "not_found" }, { status: 404 });
 
+  const pickedEntries = shortlist.filter((e) => e.pick !== null);
+
   const preview: LeadPreview = {
     lead,
     property: property?.facts ?? null,
+    picked_agents: [...pickedEntries]
+      .sort(
+        (a, b) => (a.pick?.displayOrder ?? 0) - (b.pick?.displayOrder ?? 0)
+      )
+      .slice(0, PREVIEW_LIMIT)
+      .map((e) => e.agent),
+    comparables: [...comps]
+      .sort((a, b) => a.distance_m - b.distance_m)
+      .slice(0, PREVIEW_LIMIT),
+    activity: [...activity]
+      .sort((a, b) => b.at.localeCompare(a.at))
+      .slice(0, PREVIEW_LIMIT),
     counts: {
-      picked_agents: shortlist.filter((e) => e.pick !== null).length,
+      picked_agents: pickedEntries.length,
       suggested_agents: shortlist.length,
       candidates: candidates.length,
       comparables: comps.length,

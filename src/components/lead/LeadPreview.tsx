@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   Bed,
   Building2,
@@ -10,38 +11,54 @@ import {
   Home,
   Mail,
   MapPin,
+  MessageSquare,
   Phone,
   Ruler,
+  TrendingUp,
   UserRound,
   Users,
 } from "lucide-react";
 import type { LeadPreview as LeadPreviewData } from "@/app/api/inbox/[id]/route";
-import type { Lead } from "@/lib/mock";
+import type { Lead, PropertyFacts, Provenance } from "@/lib/mock";
 import { StateChip } from "@/components/lead/StateChip";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
 import { ErrorState } from "@/components/states/ErrorState";
-import { formatMoneyNZCompact, formatRelative, cn } from "@/lib/utils";
+import {
+  cn,
+  formatDateNZ,
+  formatMoneyNZ,
+  formatMoneyNZCompact,
+  formatRelative,
+} from "@/lib/utils";
 
 /*
- * Inbox right pane. When Sarah clicks a lead in the left list, the
- * pane fetches /api/inbox/[id] and lays out everything she needs to
- * triage before opening the full workspace:
+ * Inbox right pane — rich lead dashboard.
  *
- *   - Header: address, state chip, vendor + public id
- *   - Property hero: CV vs Estimate, quick spec chips (land, floor,
- *     beds, year built), source of each headline value
- *   - Vendor row: phone, email, source, received-when
- *   - Progress row: picked / suggested agents, candidates,
- *     comparables, activity count
- *   - Primary action: Open lead (goes to the workspace)
+ * Everything Sarah needs to triage a lead without leaving the inbox.
+ * Sections stacked top-to-bottom (pane scrolls when tall):
  *
- * Falls back gracefully when we don't have a property yet or the
- * lead has no comparables.
+ *   1. Header — address, vendor, state chip, public id
+ *   2. Property snapshot — CV | Δ | Estimate hero + spec chips
+ *   3. Full property facts grid — every value with source + fetched
+ *   4. Contact — phone, email, source, received
+ *   5. Progress pills — picked / suggested / candidates / comps / activity
+ *   6. Nearby sales — top 5 comparables in a tight flat panel
+ *   7. Picked agents — small cards for each currently-picked agent
+ *   8. Recent activity — compact timeline of last 5 events
+ *   9. Open lead CTA
  */
 
 interface Props {
   lead: Lead;
 }
+
+const EMPTY_COUNTS: LeadPreviewData["counts"] = {
+  picked_agents: 0,
+  suggested_agents: 0,
+  candidates: 0,
+  comparables: 0,
+  activity: 0,
+};
 
 export function LeadPreview({ lead }: Props) {
   const query = useQuery<LeadPreviewData>({
@@ -54,21 +71,14 @@ export function LeadPreview({ lead }: Props) {
       if (!res.ok) throw new Error(`preview fetch failed: ${res.status}`);
       return res.json();
     },
-    // Cheap request; refetch on focus but no polling interval — the
-    // list polling already keeps things fresh at the list level.
     refetchOnWindowFocus: true,
-    // Seed with what we already know from the list payload so the
-    // header + vendor row render instantly.
     placeholderData: {
       lead,
       property: null,
-      counts: {
-        picked_agents: 0,
-        suggested_agents: 0,
-        candidates: 0,
-        comparables: 0,
-        activity: 0,
-      },
+      picked_agents: [],
+      comparables: [],
+      activity: [],
+      counts: EMPTY_COUNTS,
     },
   });
 
@@ -89,13 +99,18 @@ export function LeadPreview({ lead }: Props) {
     );
   }
 
-  const { lead: full, property, counts } = data;
+  const { lead: full, property, counts, picked_agents, comparables, activity } =
+    data;
   const cv = property?.cv?.value ?? null;
   const est = property?.estimate?.value ?? null;
   const delta = deltaPct(cv, est);
+  const pricePerSqm =
+    est && property?.floor_area?.value
+      ? Math.round(est / property.floor_area.value)
+      : null;
 
   return (
-    <div className="neu-raised p-6 flex flex-col gap-5 w-full anim-enter">
+    <div className="neu-raised p-6 flex flex-col gap-6 w-full anim-enter max-h-[calc(100dvh-8rem)] overflow-y-auto">
       {/* ---------- Header ---------- */}
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
@@ -111,65 +126,120 @@ export function LeadPreview({ lead }: Props) {
         <StateChip state={full.state} />
       </div>
 
-      {/* ---------- Property hero (compact) ---------- */}
-      <div className="surface-flat p-4 rounded-neu">
-        <div className="t-caption text-text-subtle uppercase tracking-wide mb-2">
-          Property snapshot
-        </div>
+      {/* ---------- Property snapshot (hero) ---------- */}
+      <Section title="Property snapshot" icon={<Home size={12} />}>
         {cv || est ? (
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <HeroFigure label="Capital value" value={cv} />
-            <DeltaChip delta={delta} />
-            <HeroFigure
-              label="Estimate"
-              value={est}
-              align="right"
-            />
+          <div className="surface-flat p-4 rounded-neu flex flex-col gap-3">
+            <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+              <HeroFigure label="Capital value" value={cv} align="left" />
+              <DeltaChip delta={delta} />
+              <HeroFigure label="Estimate" value={est} align="right" />
+            </div>
+            {property ? <PropertyChips property={property} /> : null}
           </div>
         ) : (
           <p className="t-body text-text-muted">
             No property data yet — will populate as enrichment lands.
           </p>
         )}
+      </Section>
 
-        {property ? <PropertyChips property={property} /> : null}
-      </div>
+      {/* ---------- Full property facts ---------- */}
+      {property ? (
+        <Section
+          title="Facts & provenance"
+          icon={<TrendingUp size={12} />}
+        >
+          <div className="grid grid-cols-2 gap-2">
+            <FactRow label="Capital value" prov={property.cv} kind="money" />
+            <FactRow label="Estimate" prov={property.estimate} kind="money" />
+            <FactRow
+              label="Land value"
+              prov={property.land_value}
+              kind="money"
+            />
+            <FactRow
+              label="Improvements"
+              prov={property.improvements}
+              kind="money"
+            />
+            <FactRow
+              label="Land area"
+              prov={property.land_area}
+              kind="area"
+            />
+            <FactRow
+              label="Floor area"
+              prov={property.floor_area}
+              kind="area"
+            />
+            <FactRow label="Bedrooms" prov={property.bedrooms} kind="int" />
+            <FactRow
+              label="Year built"
+              prov={property.year_built}
+              kind="year"
+            />
+            <FactRow
+              label="Last sold date"
+              prov={property.last_sold_date}
+              kind="date"
+            />
+            <FactRow
+              label="Last sold price"
+              prov={property.last_sold_price}
+              kind="money"
+            />
+            {pricePerSqm ? (
+              <div className="col-span-2 flex items-baseline justify-between gap-3 t-caption text-text-muted border-t pt-2">
+                <span>Estimated $/m² (floor)</span>
+                <span className="tabular font-semibold text-text">
+                  {formatMoneyNZ(pricePerSqm)} / m²
+                </span>
+              </div>
+            ) : null}
+          </div>
+        </Section>
+      ) : null}
 
-      {/* ---------- Vendor + source row ---------- */}
-      <div className="grid grid-cols-2 gap-3">
-        <ContactCard
-          icon={<Phone size={13} />}
-          label="Phone"
-          value={full.phone || "—"}
-          href={full.phone ? `tel:${full.phone.replace(/\s+/g, "")}` : undefined}
-        />
-        <ContactCard
-          icon={<Mail size={13} />}
-          label="Email"
-          value={full.email || "—"}
-          href={full.email ? `mailto:${full.email}` : undefined}
-        />
-        <MetaCard
-          label="Source"
-          value={
-            full.source === "web"
-              ? "Web form"
-              : full.source === "ac_manual"
-                ? "AC manual"
-                : full.source === "ac_import"
-                  ? "AC import"
-                  : "Seed placeholder"
-          }
-        />
-        <MetaCard
-          label="Received"
-          value={formatRelative(full.created_at)}
-          icon={<CalendarDays size={13} />}
-        />
-      </div>
+      {/* ---------- Contact ---------- */}
+      <Section title="Vendor & source" icon={<UserRound size={12} />}>
+        <div className="grid grid-cols-2 gap-3">
+          <ContactCard
+            icon={<Phone size={13} />}
+            label="Phone"
+            value={full.phone || "—"}
+            href={
+              full.phone ? `tel:${full.phone.replace(/\s+/g, "")}` : undefined
+            }
+          />
+          <ContactCard
+            icon={<Mail size={13} />}
+            label="Email"
+            value={full.email || "—"}
+            href={full.email ? `mailto:${full.email}` : undefined}
+          />
+          <MetaCard
+            label="Source"
+            value={
+              full.source === "web"
+                ? "Web form"
+                : full.source === "ac_manual"
+                  ? "AC manual"
+                  : full.source === "ac_import"
+                    ? "AC import"
+                    : "Seed placeholder"
+            }
+          />
+          <MetaCard
+            label="Received"
+            value={formatRelative(full.created_at)}
+            icon={<CalendarDays size={13} />}
+          />
+        </div>
+      </Section>
 
-      {/* ---------- Progress row ---------- */}
-      <div className="flex flex-wrap items-center gap-3">
+      {/* ---------- Progress ---------- */}
+      <div className="flex flex-wrap items-center gap-2">
         <CountPill
           icon={<Users size={12} />}
           label="Picked"
@@ -192,11 +262,150 @@ export function LeadPreview({ lead }: Props) {
           value={counts.comparables}
         />
         <CountPill
-          icon={<CalendarDays size={12} />}
+          icon={<Activity size={12} />}
           label="Activity"
           value={counts.activity}
         />
       </div>
+
+      {/* ---------- Nearby sales (comparables) ---------- */}
+      {comparables.length > 0 ? (
+        <Section
+          title={`Nearby sales · top ${comparables.length}${
+            counts.comparables > comparables.length
+              ? ` of ${counts.comparables}`
+              : ""
+          }`}
+          icon={<Home size={12} />}
+        >
+          <div className="surface-flat overflow-hidden rounded-neu">
+            <div className="overflow-x-auto">
+              <table className="w-full t-body">
+                <thead className="bg-surface-elevated text-text-muted">
+                  <tr>
+                    <th className="text-left px-3 py-2 font-medium">
+                      Address
+                    </th>
+                    <th className="text-right px-3 py-2 font-medium">
+                      Sale
+                    </th>
+                    <th className="text-right px-3 py-2 font-medium">
+                      vs CV
+                    </th>
+                    <th className="text-right px-3 py-2 font-medium">
+                      Distance
+                    </th>
+                    <th className="text-right px-3 py-2 font-medium">
+                      Sold
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparables.map((c, i) => {
+                    const compDelta = Math.round(
+                      ((c.sale_price - c.cv_at_sale) / c.cv_at_sale) * 100
+                    );
+                    const tone =
+                      compDelta > 3
+                        ? "chip-success"
+                        : compDelta < -3
+                          ? "chip-danger"
+                          : "chip-neutral";
+                    return (
+                      <tr
+                        key={c.address}
+                        className={i % 2 === 1 ? "bg-surface-elevated" : ""}
+                      >
+                        <td className="px-3 py-2 truncate max-w-[160px]">
+                          {c.address}
+                        </td>
+                        <td className="px-3 py-2 text-right tabular">
+                          {formatMoneyNZCompact(c.sale_price)}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <span className={cn("chip tabular", tone)}>
+                            {compDelta > 0 ? "+" : ""}
+                            {compDelta}%
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-right tabular">
+                          {c.distance_m} m
+                        </td>
+                        <td className="px-3 py-2 text-right tabular text-text-muted">
+                          {formatDateNZ(c.sale_date)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </Section>
+      ) : null}
+
+      {/* ---------- Picked agents ---------- */}
+      {picked_agents.length > 0 ? (
+        <Section
+          title={`Picked agents · ${counts.picked_agents}${
+            counts.picked_agents > picked_agents.length
+              ? ` (top ${picked_agents.length})`
+              : ""
+          }`}
+          icon={<Users size={12} />}
+        >
+          <ul className="flex flex-col gap-2">
+            {picked_agents.map((a) => (
+              <li
+                key={a.id}
+                className="neu-raised-sm px-3 py-2 flex items-center justify-between gap-3"
+              >
+                <div className="min-w-0">
+                  <div className="t-body font-semibold truncate">{a.name}</div>
+                  <div className="t-caption text-text-muted truncate">
+                    {a.agency}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {a.membership_status === "signed" ? (
+                    <span className="chip chip-success">Signed</span>
+                  ) : (
+                    <span className="chip chip-warning">Verbal</span>
+                  )}
+                  {a.sms_permission ? (
+                    <span className="chip chip-info">
+                      <MessageSquare size={11} /> SMS
+                    </span>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      ) : null}
+
+      {/* ---------- Recent activity ---------- */}
+      {activity.length > 0 ? (
+        <Section title="Recent activity" icon={<Activity size={12} />}>
+          <ol className="surface-flat divide-y rounded-neu">
+            {activity.map((e, i) => (
+              <li key={i} className="flex items-start gap-3 px-3 py-2">
+                <span
+                  aria-hidden
+                  className="mt-1.5 h-1.5 w-1.5 rounded-neu-pill shrink-0"
+                  style={{ background: "var(--accent-gradient)" }}
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="t-body truncate">{e.detail}</div>
+                  <div className="t-caption text-text-subtle tabular">
+                    {formatRelative(e.at)}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Section>
+      ) : null}
 
       {/* ---------- Primary CTA ---------- */}
       <div className="pt-1">
@@ -209,16 +418,38 @@ export function LeadPreview({ lead }: Props) {
   );
 }
 
-/* ---------------- helpers ---------------- */
+/* ---------------- section wrapper ---------------- */
+
+function Section({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="t-caption text-text-subtle uppercase tracking-wide flex items-center gap-1">
+        {icon}
+        {title}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* ---------------- primitives ---------------- */
 
 function HeroFigure({
   label,
   value,
-  align = "left",
+  align,
 }: {
   label: string;
   value: number | null;
-  align?: "left" | "right";
+  align: "left" | "right";
 }) {
   return (
     <div
@@ -230,7 +461,10 @@ function HeroFigure({
       <span className="t-caption text-text-subtle uppercase tracking-wide">
         {label}
       </span>
-      <span className="t-section tabular leading-none">
+      <span
+        className="t-section tabular leading-none"
+        title={value != null ? formatMoneyNZ(value) : "—"}
+      >
         {value != null ? formatMoneyNZCompact(value) : "—"}
       </span>
     </div>
@@ -257,11 +491,7 @@ function DeltaChip({ delta }: { delta: number | null }) {
   );
 }
 
-function PropertyChips({
-  property,
-}: {
-  property: NonNullable<LeadPreviewData["property"]>;
-}) {
+function PropertyChips({ property }: { property: PropertyFacts }) {
   const chips: { icon: React.ReactNode; text: string }[] = [];
   if (property.land_area?.value)
     chips.push({
@@ -286,7 +516,7 @@ function PropertyChips({
 
   if (chips.length === 0) return null;
   return (
-    <div className="flex flex-wrap gap-2 mt-3">
+    <div className="flex flex-wrap gap-2">
       {chips.map((c) => (
         <span
           key={c.text}
@@ -298,6 +528,60 @@ function PropertyChips({
       ))}
     </div>
   );
+}
+
+type FactKind = "money" | "area" | "int" | "year" | "date";
+
+function FactRow({
+  label,
+  prov,
+  kind,
+}: {
+  label: string;
+  prov: Provenance<number> | Provenance<string> | undefined;
+  kind: FactKind;
+}) {
+  const value = renderFact(prov?.value, kind);
+  return (
+    <div className="flex items-baseline justify-between gap-3 py-1">
+      <div className="flex flex-col min-w-0">
+        <span className="t-caption text-text-muted">{label}</span>
+        {prov ? (
+          <span className="t-caption text-text-subtle tabular">
+            {prov.source === "manual" ? "manual" : `from ${prov.source}`}
+            {" · "}
+            {formatRelative(prov.fetched_at)}
+          </span>
+        ) : null}
+      </div>
+      <span
+        className={cn(
+          "t-body tabular font-semibold text-right",
+          !prov && "text-text-subtle"
+        )}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function renderFact(value: number | string | undefined, kind: FactKind): string {
+  if (value === undefined || value === null || value === "") return "—";
+  switch (kind) {
+    case "money":
+      return typeof value === "number" ? formatMoneyNZ(value) : "—";
+    case "area":
+      return typeof value === "number"
+        ? `${value.toLocaleString("en-NZ")} m²`
+        : "—";
+    case "int":
+      return typeof value === "number" ? String(value) : "—";
+    case "year":
+      return typeof value === "number" ? String(value) : "—";
+    case "date":
+      return typeof value === "string" ? formatDateNZ(value) : "—";
+  }
 }
 
 function ContactCard({
