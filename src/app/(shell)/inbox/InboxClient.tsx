@@ -147,24 +147,6 @@ export default function InboxClient({ initialLeads }: InboxClientProps) {
 
   return (
     <div className="flex flex-col md:flex-row gap-4">
-      {/* ---------- Shortlist stage: compact context on the left ----------
-          Width animates from 0 → 420px so the pane appears to slide in
-          from the left edge, matching the sidebar hover-expand feel. */}
-      <section
-        className={cn(
-          "hidden md:flex md:sticky md:top-4 md:self-start overflow-hidden",
-          "transition-[width,opacity] duration-300 ease-out shrink-0",
-          stage === "shortlist" && selected
-            ? "md:w-[420px] opacity-100"
-            : "md:w-0 opacity-0 pointer-events-none"
-        )}
-        aria-hidden={stage !== "shortlist"}
-      >
-        {selected ? (
-          <LeadPreview lead={selected} hideCta hideBottomRow />
-        ) : null}
-      </section>
-
       {/* ---------- Preview stage: collapsed rail toggle (desktop) ---------- */}
       {stage === "preview" && listCollapsed ? (
         <aside className="hidden md:flex flex-col items-start pt-1 shrink-0">
