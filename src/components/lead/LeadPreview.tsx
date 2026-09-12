@@ -116,7 +116,7 @@ export function LeadPreview({ lead }: Props) {
   )}/960/360`;
 
   return (
-    <div className="neu-raised p-6 flex flex-col gap-4 w-full anim-enter max-h-[calc(100dvh-8rem)]">
+    <div className="neu-raised p-6 flex flex-col gap-4 w-full anim-enter max-h-[calc(100dvh-8rem)] relative">
       {/* ---------- Header (pinned) ---------- */}
       <div className="flex items-start justify-between gap-4 shrink-0">
         <div className="min-w-0">
@@ -133,9 +133,11 @@ export function LeadPreview({ lead }: Props) {
       </div>
 
       {/* ---------- Scrolling body ---------- */}
+      {/* pb-16 leaves clearance so the floating CTA never sits on top
+          of the last section's content when scrolled to the end. */}
       <div
         id="lead-preview-scroll"
-        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 -mr-2 pr-2"
+        className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-6 -mr-2 pr-2 pb-16"
       >
       {/* ---------- Property snapshot ---------- */}
       <Section title="Property snapshot" icon={<Home size={12} />}>
@@ -450,13 +452,14 @@ export function LeadPreview({ lead }: Props) {
       ) : null}
 
       </div>
-      {/* ---------- Primary CTA (sticky footer, bottom-right) ---------- */}
-      <div className="shrink-0 pt-3 border-t flex justify-end">
-        <Link href={`/leads/${full.id}`} className="btn-accent-glass">
-          Open lead
-          <ArrowRight size={16} />
-        </Link>
-      </div>
+      {/* ---------- Primary CTA (floats bottom-right over scroll) ---------- */}
+      <Link
+        href={`/leads/${full.id}`}
+        className="btn-accent-glass absolute bottom-4 right-4 z-10 shadow-lg"
+      >
+        Open lead
+        <ArrowRight size={16} />
+      </Link>
     </div>
   );
 }
