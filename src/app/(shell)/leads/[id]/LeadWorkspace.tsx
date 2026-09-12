@@ -16,7 +16,6 @@ import type { PropertyBundle } from "@/lib/repo/properties";
 import { AgentRow } from "@/components/lead/AgentRow";
 import { CandidateRow } from "@/components/lead/CandidateRow";
 import { CompactTimeline } from "@/components/lead/CompactTimeline";
-import { LeadHeaderStepper } from "@/components/lead/LeadHeaderStepper";
 import { PropertyHero } from "@/components/lead/PropertyHero";
 import { PropertyTabs } from "@/components/lead/PropertyTabs";
 import { RightRail } from "@/components/lead/RightRail";
@@ -162,8 +161,6 @@ export default function LeadWorkspace({
             Compare
           </Link>
         </div>
-
-        <LeadHeaderStepper state={lead.state} />
       </header>
 
       {/* -------- Mobile tabs (hidden on desktop) -------- */}
