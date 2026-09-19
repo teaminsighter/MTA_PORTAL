@@ -84,6 +84,53 @@
       "agency": "Bayleys"
     }
   ],
+  "MTA-2026-00419": [
+    {
+      "address": "22 Ngaio Street, Mt Eden",
+      "sale_price": 1985000,
+      "sale_date": "2026-07-25",
+      "distance_m": 110,
+      "cv_at_sale": 1870000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "58 Owens Road, Mt Eden",
+      "sale_price": 1830000,
+      "sale_date": "2026-06-11",
+      "distance_m": 280,
+      "cv_at_sale": 1780000,
+      "agent_name": "Hamish Trent",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "9 Rewi Alley Terrace, Mt Eden",
+      "sale_price": 1920000,
+      "sale_date": "2026-05-08",
+      "distance_m": 380,
+      "cv_at_sale": 1850000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "45 Ronaki Road, Mt Eden",
+      "sale_price": 2040000,
+      "sale_date": "2026-08-14",
+      "distance_m": 520,
+      "cv_at_sale": 1920000,
+      "agent_name": "Jarrod Neale",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "3 Windmill Road, Mt Eden",
+      "sale_price": 1760000,
+      "sale_date": "2026-04-02",
+      "distance_m": 640,
+      "cv_at_sale": 1720000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    }
+  ],
   "MTA-2026-00418": [
     {
       "address": "12 Salamanca Road, Kelburn",
@@ -120,6 +167,272 @@
       "cv_at_sale": 1100000,
       "agent_name": "Suzanne Park",
       "agency": "Harcourts"
+    }
+  ],
+  "MTA-2026-00417": [
+    {
+      "address": "18 Rossall Street, Merivale",
+      "sale_price": 1315000,
+      "sale_date": "2026-07-30",
+      "distance_m": 80,
+      "cv_at_sale": 1250000,
+      "agent_name": "Hamish Trent",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "42 Mansfield Avenue, Merivale",
+      "sale_price": 1195000,
+      "sale_date": "2026-06-15",
+      "distance_m": 260,
+      "cv_at_sale": 1180000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "7 Innes Road, St Albans",
+      "sale_price": 1060000,
+      "sale_date": "2026-05-18",
+      "distance_m": 720,
+      "cv_at_sale": 1020000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "23 Papanui Road, Merivale",
+      "sale_price": 1420000,
+      "sale_date": "2026-08-04",
+      "distance_m": 340,
+      "cv_at_sale": 1320000,
+      "agent_name": "Jarrod Neale",
+      "agency": "Barfoot & Thompson"
+    }
+  ],
+  "MTA-2026-00416": [
+    {
+      "address": "14 Cliveden Grove, Bethlehem",
+      "sale_price": 1155000,
+      "sale_date": "2026-07-11",
+      "distance_m": 70,
+      "cv_at_sale": 1090000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "38 Bethlehem Road, Bethlehem",
+      "sale_price": 1050000,
+      "sale_date": "2026-06-02",
+      "distance_m": 310,
+      "cv_at_sale": 1030000,
+      "agent_name": "Marcus Doyle",
+      "agency": "Ray White"
+    },
+    {
+      "address": "6 Elder Lane, Bethlehem",
+      "sale_price": 1220000,
+      "sale_date": "2026-08-17",
+      "distance_m": 480,
+      "cv_at_sale": 1150000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "21 Millers Road, Bethlehem",
+      "sale_price": 985000,
+      "sale_date": "2026-04-28",
+      "distance_m": 590,
+      "cv_at_sale": 970000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    }
+  ],
+  "MTA-2026-00415": [
+    {
+      "address": "72 Beach Road, Devonport",
+      "sale_price": 2880000,
+      "sale_date": "2026-07-22",
+      "distance_m": 90,
+      "cv_at_sale": 2650000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "14 Cheltenham Road, Devonport",
+      "sale_price": 2740000,
+      "sale_date": "2026-06-19",
+      "distance_m": 260,
+      "cv_at_sale": 2540000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "5 Vauxhall Road, Devonport",
+      "sale_price": 2520000,
+      "sale_date": "2026-05-06",
+      "distance_m": 380,
+      "cv_at_sale": 2380000,
+      "agent_name": "Hamish Trent",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "31 Victoria Road, Devonport",
+      "sale_price": 2960000,
+      "sale_date": "2026-08-11",
+      "distance_m": 460,
+      "cv_at_sale": 2700000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    }
+  ],
+  "MTA-2026-00414": [
+    {
+      "address": "9 Godley Street, Sumner",
+      "sale_price": 1385000,
+      "sale_date": "2026-07-14",
+      "distance_m": 60,
+      "cv_at_sale": 1310000,
+      "agent_name": "Hamish Trent",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "18 Nayland Street, Sumner",
+      "sale_price": 1260000,
+      "sale_date": "2026-06-07",
+      "distance_m": 220,
+      "cv_at_sale": 1220000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    },
+    {
+      "address": "44 Wakefield Avenue, Sumner",
+      "sale_price": 1440000,
+      "sale_date": "2026-08-24",
+      "distance_m": 340,
+      "cv_at_sale": 1350000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "3 Marine Parade, Sumner",
+      "sale_price": 1580000,
+      "sale_date": "2026-05-30",
+      "distance_m": 480,
+      "cv_at_sale": 1480000,
+      "agent_name": "Marcus Doyle",
+      "agency": "Ray White"
+    }
+  ],
+  "MTA-2026-00413": [
+    {
+      "address": "12 Grafton Road, Roseneath",
+      "sale_price": 1520000,
+      "sale_date": "2026-07-02",
+      "distance_m": 70,
+      "cv_at_sale": 1450000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    },
+    {
+      "address": "8 Palliser Road, Roseneath",
+      "sale_price": 1615000,
+      "sale_date": "2026-06-18",
+      "distance_m": 240,
+      "cv_at_sale": 1540000,
+      "agent_name": "Anna Fielding",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "3 Maida Vale Road, Roseneath",
+      "sale_price": 1420000,
+      "sale_date": "2026-05-25",
+      "distance_m": 380,
+      "cv_at_sale": 1390000,
+      "agent_name": "Nicola Harding",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "27 Grass Street, Oriental Bay",
+      "sale_price": 1780000,
+      "sale_date": "2026-08-06",
+      "distance_m": 620,
+      "cv_at_sale": 1650000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    }
+  ],
+  "MTA-2026-00412": [
+    {
+      "address": "40 Cameron Road, Tauranga South",
+      "sale_price": 985000,
+      "sale_date": "2026-07-08",
+      "distance_m": 120,
+      "cv_at_sale": 930000,
+      "agent_name": "Marcus Doyle",
+      "agency": "Ray White"
+    },
+    {
+      "address": "12 Fifteenth Avenue, Tauranga South",
+      "sale_price": 920000,
+      "sale_date": "2026-06-21",
+      "distance_m": 260,
+      "cv_at_sale": 890000,
+      "agent_name": "Jarrod Neale",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "7 Fraser Street, Tauranga South",
+      "sale_price": 1050000,
+      "sale_date": "2026-08-11",
+      "distance_m": 340,
+      "cv_at_sale": 980000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
+    },
+    {
+      "address": "19 Devonport Road, Tauranga South",
+      "sale_price": 895000,
+      "sale_date": "2026-05-14",
+      "distance_m": 480,
+      "cv_at_sale": 870000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    }
+  ],
+  "MTA-2026-00411": [
+    {
+      "address": "24 Marewa Terrace, Napier South",
+      "sale_price": 810000,
+      "sale_date": "2026-07-19",
+      "distance_m": 80,
+      "cv_at_sale": 780000,
+      "agent_name": "Marcus Doyle",
+      "agency": "Ray White"
+    },
+    {
+      "address": "6 Latham Street, Napier South",
+      "sale_price": 745000,
+      "sale_date": "2026-06-05",
+      "distance_m": 240,
+      "cv_at_sale": 730000,
+      "agent_name": "Jarrod Neale",
+      "agency": "Barfoot & Thompson"
+    },
+    {
+      "address": "38 Kennedy Road, Napier South",
+      "sale_price": 890000,
+      "sale_date": "2026-08-02",
+      "distance_m": 360,
+      "cv_at_sale": 840000,
+      "agent_name": "Tim Redgrave",
+      "agency": "Tommy's"
+    },
+    {
+      "address": "11 Riverbend Road, Onekawa",
+      "sale_price": 680000,
+      "sale_date": "2026-05-16",
+      "distance_m": 520,
+      "cv_at_sale": 670000,
+      "agent_name": "Chloe Bennett",
+      "agency": "Bayleys"
     }
   ]
 }

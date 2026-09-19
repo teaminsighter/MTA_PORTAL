@@ -6,6 +6,18 @@
     { "type": "state_change",    "at": "2026-09-05T02:16:15Z", "detail": "State moved to ready_for_review." },
     { "type": "vendor_open",     "at": "2026-09-05T02:33:12Z", "detail": "Vendor opened the workspace preview." }
   ],
+  "MTA-2026-00420": [
+    { "type": "lead_received",   "at": "2026-09-05T01:47:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-05T01:47:04Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_start","at": "2026-09-05T01:48:30Z", "detail": "Cotality enrichment queued — property + comparables." }
+  ],
+  "MTA-2026-00419": [
+    { "type": "lead_received",   "at": "2026-09-04T22:03:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-04T22:03:06Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-04T22:06:08Z", "detail": "Cotality: 10 property fields + 5 comparables fetched." },
+    { "type": "state_change",    "at": "2026-09-04T22:06:10Z", "detail": "State moved to dispatching." },
+    { "type": "send",            "at": "2026-09-04T22:24:00Z", "detail": "Fan-out queued to 3 agents (SMS + email)." }
+  ],
   "MTA-2026-00418": [
     { "type": "lead_received",   "at": "2026-09-04T20:38:00Z", "detail": "Lead received from mytopagent.co.nz form." },
     { "type": "enrichment_done", "at": "2026-09-04T20:40:30Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
@@ -13,5 +25,67 @@
     { "type": "delivery",        "at": "2026-09-04T20:52:22Z", "detail": "Vendor email delivered." },
     { "type": "delivery",        "at": "2026-09-04T20:52:41Z", "detail": "Agent email delivered to Tim Redgrave." },
     { "type": "ac_sync_in",      "at": "2026-09-04T21:14:00Z", "detail": "AC deal stage updated: Contacted." }
+  ],
+  "MTA-2026-00417": [
+    { "type": "lead_received",   "at": "2026-09-04T09:12:00Z", "detail": "Lead imported from ActiveCampaign (existing deal)." },
+    { "type": "enrichment_done", "at": "2026-09-04T09:15:12Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-04T10:04:00Z", "detail": "Sent to 3 agents (Hamish Trent, Anna Fielding, Jarrod Neale)." },
+    { "type": "delivery",        "at": "2026-09-04T10:04:31Z", "detail": "Agent SMS delivered — Hamish Trent." },
+    { "type": "reply",           "at": "2026-09-04T11:22:00Z", "detail": "Hamish Trent confirmed (SMS reply: YES)." },
+    { "type": "reply",           "at": "2026-09-04T12:48:00Z", "detail": "Anna Fielding confirmed (email reply)." },
+    { "type": "vendor_packet",   "at": "2026-09-04T14:05:00Z", "detail": "Vendor packet sent to Hemi Kingi (2 agents included)." },
+    { "type": "state_change",    "at": "2026-09-05T09:30:00Z", "detail": "Vendor appointed Hamish Trent — state → agent_appointed." },
+    { "type": "ac_sync_in",      "at": "2026-09-05T09:30:12Z", "detail": "AC deal stage updated: Agent Appointed." }
+  ],
+  "MTA-2026-00416": [
+    { "type": "lead_received",   "at": "2026-09-03T18:05:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "enrichment_done", "at": "2026-09-03T18:08:24Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-03T19:14:00Z", "detail": "Sent to 3 agents (Chloe Bennett, Marcus Doyle, Anna Fielding)." },
+    { "type": "reply",           "at": "2026-09-03T20:03:00Z", "detail": "Chloe Bennett confirmed (SMS reply: YES)." },
+    { "type": "reply",           "at": "2026-09-03T20:41:00Z", "detail": "Anna Fielding confirmed (SMS reply: YES)." },
+    { "type": "vendor_packet",   "at": "2026-09-04T08:22:00Z", "detail": "Vendor packet sent to Sophie Larsen (2 agents)." },
+    { "type": "state_change",    "at": "2026-09-05T15:47:00Z", "detail": "Chloe Bennett appointed — state → agent_appointed." },
+    { "type": "state_change",    "at": "2026-09-11T11:05:00Z", "detail": "Property listed on TradeMe & Realestate.co.nz — state → listed." },
+    { "type": "ac_sync_in",      "at": "2026-09-11T11:05:22Z", "detail": "AC deal stage updated: Listed." }
+  ],
+  "MTA-2026-00415": [
+    { "type": "lead_received",   "at": "2026-09-03T11:52:00Z", "detail": "Lead imported from ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-03T11:55:07Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-03T13:28:00Z", "detail": "Sent to 3 agents (Nicola Harding, Anna Fielding, Hamish Trent)." },
+    { "type": "reply",           "at": "2026-09-03T14:12:00Z", "detail": "Nicola Harding confirmed (SMS reply: YES)." },
+    { "type": "reply",           "at": "2026-09-03T15:34:00Z", "detail": "Hamish Trent confirmed (email reply)." },
+    { "type": "vendor_packet",   "at": "2026-09-03T17:00:00Z", "detail": "Vendor packet sent to Kaea Rewiti (2 agents)." },
+    { "type": "state_change",    "at": "2026-09-04T10:15:00Z", "detail": "Nicola Harding appointed — state → agent_appointed." },
+    { "type": "state_change",    "at": "2026-09-09T09:00:00Z", "detail": "Property listed — state → listed." },
+    { "type": "state_change",    "at": "2026-09-18T16:42:00Z", "detail": "Sold at $2,910,000 — state → sold." },
+    { "type": "ac_sync_in",      "at": "2026-09-18T16:42:18Z", "detail": "AC deal stage updated: Won." }
+  ],
+  "MTA-2026-00414": [
+    { "type": "lead_received",   "at": "2026-09-03T08:20:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-03T08:20:04Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-03T08:23:32Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-03T09:41:00Z", "detail": "Fan-out sent to 3 agents." },
+    { "type": "delivery",        "at": "2026-09-03T09:41:22Z", "detail": "SMS delivered — Hamish Trent." },
+    { "type": "delivery",        "at": "2026-09-03T09:41:40Z", "detail": "Email delivered — Tim Redgrave." },
+    { "type": "delivery_failed", "at": "2026-09-03T09:42:03Z", "detail": "SMS failed to Chloe Bennett (invalid number) — retry queued." }
+  ],
+  "MTA-2026-00413": [
+    { "type": "lead_received",   "at": "2026-09-02T23:44:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-02T23:44:03Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-02T23:47:11Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "send",            "at": "2026-09-03T07:18:00Z", "detail": "Fan-out sent to 3 agents (SMS + email)." },
+    { "type": "delivery",        "at": "2026-09-03T07:18:24Z", "detail": "SMS delivered — Tim Redgrave." },
+    { "type": "delivery",        "at": "2026-09-03T07:18:38Z", "detail": "SMS delivered — Anna Fielding." },
+    { "type": "delivery",        "at": "2026-09-03T07:18:52Z", "detail": "Email delivered — Nicola Harding." }
+  ],
+  "MTA-2026-00412": [
+    { "type": "lead_received",   "at": "2026-09-02T15:10:00Z", "detail": "Lead entered manually by Sarah (phone intake)." },
+    { "type": "ac_sync_out",     "at": "2026-09-02T15:10:05Z", "detail": "Contact + deal created in ActiveCampaign." }
+  ],
+  "MTA-2026-00411": [
+    { "type": "lead_received",   "at": "2026-09-02T10:33:00Z", "detail": "Lead received from mytopagent.co.nz form." },
+    { "type": "ac_sync_out",     "at": "2026-09-02T10:33:04Z", "detail": "Contact + deal created in ActiveCampaign." },
+    { "type": "enrichment_done", "at": "2026-09-02T10:36:44Z", "detail": "Cotality: 10 property fields + 4 comparables fetched." },
+    { "type": "state_change",    "at": "2026-09-02T10:36:46Z", "detail": "State moved to ready_for_review." }
   ]
 }

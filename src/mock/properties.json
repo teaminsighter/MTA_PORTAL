@@ -23,6 +23,18 @@
     "last_sold_date": { "value": "2011-11-08", "source": "homes", "fetched_at": "2026-09-05T01:50:12Z" },
     "last_sold_price": { "value": 985000, "source": "homes", "fetched_at": "2026-09-05T01:50:12Z" }
   },
+  "MTA-2026-00419": {
+    "cv": { "value": 1850000, "source": "cotality", "fetched_at": "2026-09-04T22:05:14Z" },
+    "land_value": { "value": 1180000, "source": "cotality", "fetched_at": "2026-09-04T22:05:14Z" },
+    "improvements": { "value": 670000, "source": "cotality", "fetched_at": "2026-09-04T22:05:14Z" },
+    "estimate": { "value": 1940000, "source": "homes", "fetched_at": "2026-09-04T22:06:02Z" },
+    "land_area": { "value": 480, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-04T22:05:41Z" },
+    "floor_area": { "value": 155, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-04T22:05:33Z" },
+    "bedrooms": { "value": 4, "source": "corelogic", "fetched_at": "2026-09-04T22:05:33Z" },
+    "year_built": { "value": 1928, "source": "corelogic", "fetched_at": "2026-09-04T22:05:33Z" },
+    "last_sold_date": { "value": "2015-08-18", "source": "homes", "fetched_at": "2026-09-04T22:06:02Z" },
+    "last_sold_price": { "value": 1150000, "source": "homes", "fetched_at": "2026-09-04T22:06:02Z" }
+  },
   "MTA-2026-00418": {
     "cv": { "value": 1180000, "source": "cotality", "fetched_at": "2026-09-04T20:40:00Z" },
     "land_value": { "value": 620000, "source": "cotality", "fetched_at": "2026-09-04T20:40:00Z" },
@@ -34,5 +46,89 @@
     "year_built": { "value": 1935, "source": "corelogic", "fetched_at": "2026-09-04T20:40:38Z" },
     "last_sold_date": { "value": "2019-02-14", "source": "homes", "fetched_at": "2026-09-04T20:41:18Z" },
     "last_sold_price": { "value": 890000, "source": "homes", "fetched_at": "2026-09-04T20:41:18Z" }
+  },
+  "MTA-2026-00417": {
+    "cv": { "value": 1240000, "source": "cotality", "fetched_at": "2026-09-04T09:14:22Z" },
+    "land_value": { "value": 640000, "source": "cotality", "fetched_at": "2026-09-04T09:14:22Z" },
+    "improvements": { "value": 600000, "source": "cotality", "fetched_at": "2026-09-04T09:14:22Z" },
+    "estimate": { "value": 1290000, "source": "homes", "fetched_at": "2026-09-04T09:15:08Z" },
+    "land_area": { "value": 620, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-04T09:14:47Z" },
+    "floor_area": { "value": 195, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-04T09:14:38Z" },
+    "bedrooms": { "value": 4, "source": "corelogic", "fetched_at": "2026-09-04T09:14:38Z" },
+    "year_built": { "value": 1978, "source": "corelogic", "fetched_at": "2026-09-04T09:14:38Z" },
+    "last_sold_date": { "value": "2014-03-12", "source": "homes", "fetched_at": "2026-09-04T09:15:08Z" },
+    "last_sold_price": { "value": 780000, "source": "homes", "fetched_at": "2026-09-04T09:15:08Z" }
+  },
+  "MTA-2026-00416": {
+    "cv": { "value": 1120000, "source": "cotality", "fetched_at": "2026-09-03T18:07:34Z" },
+    "land_value": { "value": 490000, "source": "cotality", "fetched_at": "2026-09-03T18:07:34Z" },
+    "improvements": { "value": 630000, "source": "cotality", "fetched_at": "2026-09-03T18:07:34Z" },
+    "estimate": { "value": 1180000, "source": "homes", "fetched_at": "2026-09-03T18:08:19Z" },
+    "land_area": { "value": 780, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-03T18:07:58Z" },
+    "floor_area": { "value": 202, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-03T18:07:49Z" },
+    "bedrooms": { "value": 5, "source": "corelogic", "fetched_at": "2026-09-03T18:07:49Z" },
+    "year_built": { "value": 1994, "source": "corelogic", "fetched_at": "2026-09-03T18:07:49Z" },
+    "last_sold_date": { "value": "2018-05-30", "source": "homes", "fetched_at": "2026-09-03T18:08:19Z" },
+    "last_sold_price": { "value": 830000, "source": "homes", "fetched_at": "2026-09-03T18:08:19Z" }
+  },
+  "MTA-2026-00415": {
+    "cv": { "value": 2650000, "source": "cotality", "fetched_at": "2026-09-03T11:54:07Z" },
+    "land_value": { "value": 1820000, "source": "cotality", "fetched_at": "2026-09-03T11:54:07Z" },
+    "improvements": { "value": 830000, "source": "cotality", "fetched_at": "2026-09-03T11:54:07Z" },
+    "estimate": { "value": 2820000, "source": "homes", "fetched_at": "2026-09-03T11:55:02Z" },
+    "land_area": { "value": 620, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-03T11:54:38Z" },
+    "floor_area": { "value": 220, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-03T11:54:29Z" },
+    "bedrooms": { "value": 4, "source": "corelogic", "fetched_at": "2026-09-03T11:54:29Z" },
+    "year_built": { "value": 1920, "source": "corelogic", "fetched_at": "2026-09-03T11:54:29Z" },
+    "last_sold_date": { "value": "2013-11-05", "source": "homes", "fetched_at": "2026-09-03T11:55:02Z" },
+    "last_sold_price": { "value": 1650000, "source": "homes", "fetched_at": "2026-09-03T11:55:02Z" }
+  },
+  "MTA-2026-00414": {
+    "cv": { "value": 1320000, "source": "cotality", "fetched_at": "2026-09-03T08:22:41Z" },
+    "land_value": { "value": 780000, "source": "cotality", "fetched_at": "2026-09-03T08:22:41Z" },
+    "improvements": { "value": 540000, "source": "cotality", "fetched_at": "2026-09-03T08:22:41Z" },
+    "estimate": { "value": 1380000, "source": "homes", "fetched_at": "2026-09-03T08:23:26Z" },
+    "land_area": { "value": 550, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-03T08:23:04Z" },
+    "floor_area": { "value": 172, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-03T08:22:55Z" },
+    "bedrooms": { "value": 3, "source": "corelogic", "fetched_at": "2026-09-03T08:22:55Z" },
+    "year_built": { "value": 1965, "source": "corelogic", "fetched_at": "2026-09-03T08:22:55Z" },
+    "last_sold_date": { "value": "2016-09-22", "source": "homes", "fetched_at": "2026-09-03T08:23:26Z" },
+    "last_sold_price": { "value": 895000, "source": "homes", "fetched_at": "2026-09-03T08:23:26Z" }
+  },
+  "MTA-2026-00413": {
+    "cv": { "value": 1480000, "source": "cotality", "fetched_at": "2026-09-02T23:46:18Z" },
+    "land_value": { "value": 720000, "source": "cotality", "fetched_at": "2026-09-02T23:46:18Z" },
+    "improvements": { "value": 760000, "source": "cotality", "fetched_at": "2026-09-02T23:46:18Z" },
+    "estimate": { "value": 1560000, "source": "homes", "fetched_at": "2026-09-02T23:47:04Z" },
+    "land_area": { "value": 380, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-02T23:46:42Z" },
+    "floor_area": { "value": 178, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-02T23:46:33Z" },
+    "bedrooms": { "value": 3, "source": "corelogic", "fetched_at": "2026-09-02T23:46:33Z" },
+    "year_built": { "value": 1958, "source": "corelogic", "fetched_at": "2026-09-02T23:46:33Z" },
+    "last_sold_date": { "value": "2017-06-14", "source": "homes", "fetched_at": "2026-09-02T23:47:04Z" },
+    "last_sold_price": { "value": 1020000, "source": "homes", "fetched_at": "2026-09-02T23:47:04Z" }
+  },
+  "MTA-2026-00412": {
+    "cv": { "value": 940000, "source": "cotality", "fetched_at": "2026-09-02T15:12:33Z" },
+    "land_value": { "value": 420000, "source": "cotality", "fetched_at": "2026-09-02T15:12:33Z" },
+    "improvements": { "value": 520000, "source": "cotality", "fetched_at": "2026-09-02T15:12:33Z" },
+    "estimate": { "value": 985000, "source": "homes", "fetched_at": "2026-09-02T15:13:14Z" },
+    "land_area": { "value": 620, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-02T15:12:52Z" },
+    "floor_area": { "value": 145, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-02T15:12:44Z" },
+    "bedrooms": { "value": 3, "source": "corelogic", "fetched_at": "2026-09-02T15:12:44Z" },
+    "year_built": { "value": 1982, "source": "corelogic", "fetched_at": "2026-09-02T15:12:44Z" },
+    "last_sold_date": { "value": "2015-04-08", "source": "homes", "fetched_at": "2026-09-02T15:13:14Z" },
+    "last_sold_price": { "value": 620000, "source": "homes", "fetched_at": "2026-09-02T15:13:14Z" }
+  },
+  "MTA-2026-00411": {
+    "cv": { "value": 785000, "source": "cotality", "fetched_at": "2026-09-02T10:35:52Z" },
+    "land_value": { "value": 340000, "source": "cotality", "fetched_at": "2026-09-02T10:35:52Z" },
+    "improvements": { "value": 445000, "source": "cotality", "fetched_at": "2026-09-02T10:35:52Z" },
+    "estimate": { "value": 820000, "source": "homes", "fetched_at": "2026-09-02T10:36:38Z" },
+    "land_area": { "value": 690, "unit": "sqm", "source": "linz", "fetched_at": "2026-09-02T10:36:14Z" },
+    "floor_area": { "value": 158, "unit": "sqm", "source": "corelogic", "fetched_at": "2026-09-02T10:36:05Z" },
+    "bedrooms": { "value": 4, "source": "corelogic", "fetched_at": "2026-09-02T10:36:05Z" },
+    "year_built": { "value": 1954, "source": "corelogic", "fetched_at": "2026-09-02T10:36:05Z" },
+    "last_sold_date": { "value": "2019-01-25", "source": "homes", "fetched_at": "2026-09-02T10:36:38Z" },
+    "last_sold_price": { "value": 555000, "source": "homes", "fetched_at": "2026-09-02T10:36:38Z" }
   }
 }

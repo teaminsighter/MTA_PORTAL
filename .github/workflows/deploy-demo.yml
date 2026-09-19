@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: demo
-      url: https://mta-portal-demo.workers.dev
+      url: https://mta-portal-demo.flymehigh-account.workers.dev
     steps:
       - uses: actions/checkout@v4
 
