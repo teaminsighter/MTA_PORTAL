@@ -6,6 +6,7 @@ import { leads as leadsTable } from "@/db/schema";
 import { isDemoMode } from "@/lib/demo/mode";
 import {
   demoGetLead,
+  demoGetNextLead,
   demoListLeads,
   demoListRecentLeads,
 } from "@/lib/demo/data";
@@ -77,6 +78,19 @@ export async function getLead(publicId: string): Promise<Lead | null> {
     .where(eq(leadsTable.d1_lead_id, publicId))
     .limit(1);
   return row ? toLead(row) : null;
+}
+
+/**
+ * The next lead after `publicId` in inbox reading order
+ * (created_at desc). Wraps to the first lead if we're at the end so
+ * the demo "continue to next lead" flow always has a destination.
+ */
+export async function getNextLead(publicId: string): Promise<Lead | null> {
+  if (isDemoMode()) return demoGetNextLead(publicId);
+  const list = await listLeads();
+  const idx = list.findIndex((l) => l.id === publicId);
+  if (idx === -1) return list[0] ?? null;
+  return list[idx + 1] ?? list[0] ?? null;
 }
 
 /** Internal helper used by other repos that need the numeric `id`. */

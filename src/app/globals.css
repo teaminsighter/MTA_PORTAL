@@ -109,6 +109,13 @@ html, body {
   .chip-danger  { background: var(--danger-bg);  color: var(--danger);  }
   .chip-info    { background: var(--info-bg);    color: var(--info);    }
   .chip-neutral { background: var(--neutral-bg); color: var(--text-muted); }
+  /* Queued / sending — success-tinted outline so it reads "about to be
+     sent" without competing with the solid "sent" pill. */
+  .chip-queued {
+    background: color-mix(in oklab, var(--success-bg) 60%, transparent);
+    color: var(--success);
+    box-shadow: inset 0 0 0 1px var(--success);
+  }
 
   /* ------ Glassy accent CTA -------------------------------------- */
   .btn-accent-glass {
@@ -261,6 +268,40 @@ html, body {
   .anim-pulse-dot-2 { animation-delay: 0.15s; }
   .anim-pulse-dot-3 { animation-delay: 0.3s; }
 
+  .anim-spin-slow {
+    animation: mta-spin 900ms linear infinite;
+  }
+  .anim-pulse-soft {
+    animation: mta-pulse-soft 1.4s ease-in-out infinite;
+  }
+  /* One-shot outward glow on the Send-to-Vendor CTA so the phase
+     change is unmissable without being noisy. */
+  .anim-vendor-pulse {
+    animation: mta-vendor-pulse 1.6s var(--ease-spring) 1;
+  }
+  .anim-fade-in {
+    animation: mta-fade-in 220ms ease-out both;
+  }
+  .anim-modal-in {
+    animation: mta-modal-in 280ms var(--ease-spring) both;
+  }
+  .anim-call-active {
+    animation: mta-call-active 1.6s ease-in-out infinite;
+  }
+  .anim-phone-wiggle {
+    animation: mta-phone-wiggle 700ms ease-in-out infinite;
+    transform-origin: 50% 55%;
+  }
+
+  /* Confirmed row — green edge glow to signal "agent has said yes",
+     survives regardless of picked/inset shadow so the state reads at a
+     glance across the whole shortlist. */
+  .row-confirmed {
+    box-shadow:
+      inset 0 0 0 1.5px var(--success),
+      0 0 0 4px color-mix(in oklab, var(--success) 12%, transparent);
+  }
+
   /*
    * Expand-row is the accessible way to animate height:auto without
    * measuring the DOM. Parent sets grid-template-rows via [data-open].
@@ -333,6 +374,41 @@ html, body {
 @keyframes mta-pulse-dot {
   0%, 100% { opacity: 0.25; transform: translateY(0); }
   50%      { opacity: 1;    transform: translateY(-2px); }
+}
+
+@keyframes mta-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mta-pulse-soft {
+  0%, 100% { opacity: 0.5; }
+  50%      { opacity: 1;   }
+}
+
+@keyframes mta-vendor-pulse {
+  0%   { box-shadow: 0 0 0 0   color-mix(in oklab, var(--success) 60%, transparent), var(--shadow-raised-sm); transform: scale(1); }
+  40%  { box-shadow: 0 0 0 16px color-mix(in oklab, var(--success) 0%, transparent),  var(--shadow-raised-sm); transform: scale(1.03); }
+  100% { box-shadow: 0 0 0 0   color-mix(in oklab, var(--success) 0%, transparent),  var(--shadow-raised-sm); transform: scale(1); }
+}
+
+@keyframes mta-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes mta-modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes mta-call-active {
+  0%, 100% { box-shadow: 0 0 0 0    color-mix(in oklab, var(--success) 55%, transparent); }
+  50%      { box-shadow: 0 0 0 12px color-mix(in oklab, var(--success) 0%,  transparent); }
+}
+
+@keyframes mta-phone-wiggle {
+  0%, 100% { transform: rotate(-10deg); }
+  50%      { transform: rotate(10deg);  }
 }
 
 /* Global respect for reduced motion. */

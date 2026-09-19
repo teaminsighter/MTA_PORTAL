@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import LeadWorkspace from "./LeadWorkspace";
 import { auth } from "@/lib/auth";
-import { getLead, getLeadRow } from "@/lib/repo/leads";
+import { getLead, getLeadRow, getNextLead } from "@/lib/repo/leads";
 import { getPropertyForLead } from "@/lib/repo/properties";
 import { listComparablesForLead } from "@/lib/repo/comparables";
 import { getShortlistForLead } from "@/lib/repo/agents";
@@ -17,7 +17,7 @@ interface LeadPageProps {
 
 export default async function LeadPage({ params }: LeadPageProps) {
   const { id } = await params;
-  const [lead, property, comps, shortlist, candidates, activity] =
+  const [lead, property, comps, shortlist, candidates, activity, nextLead] =
     await Promise.all([
       getLead(id),
       getPropertyForLead(id),
@@ -25,6 +25,7 @@ export default async function LeadPage({ params }: LeadPageProps) {
       getShortlistForLead(id),
       listCandidatesForLead(id),
       listActivityForLead(id),
+      getNextLead(id),
     ]);
   if (!lead) notFound();
 
@@ -67,6 +68,7 @@ export default async function LeadPage({ params }: LeadPageProps) {
       shortlist={shortlist}
       candidates={candidates}
       activity={activity}
+      nextLead={nextLead}
     />
   );
 }

@@ -9,6 +9,7 @@ import { getLeadRowId } from "@/lib/repo/leads";
 import { requireRole, type ActionResult } from "@/lib/auth/guard";
 import { logAudit } from "@/lib/audit";
 import { isDemoMode } from "@/lib/demo/mode";
+import { demoPickAgent, demoUnpickAgent } from "@/lib/demo/data";
 
 /*
  * Per-pick reason note.
@@ -191,7 +192,11 @@ export async function pickAgentAction(
   input: PickAgentInput
 ): Promise<ActionResult<{ version: number; display_order: number }>> {
   if (isDemoMode()) {
-    return { ok: true, data: { version: 1, display_order: 0 } };
+    const res = demoPickAgent(input.lead_public_id, input.agent_id);
+    return {
+      ok: true,
+      data: { version: res.version, display_order: res.displayOrder },
+    };
   }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;
@@ -265,7 +270,8 @@ export async function unpickAgentAction(
   input: UnpickAgentInput
 ): Promise<ActionResult<{ version: number }>> {
   if (isDemoMode()) {
-    return { ok: true, data: { version: input.expected_version + 1 } };
+    const res = demoUnpickAgent(input.lead_public_id, input.agent_id);
+    return { ok: true, data: { version: res.version } };
   }
   const guard = await requireRole("consultant", "admin");
   if (!guard.ok) return guard;

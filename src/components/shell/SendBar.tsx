@@ -1,45 +1,48 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Check, Send } from "lucide-react";
+import { ArrowRight, Check, Clock, Send } from "lucide-react";
+import type { SendPhase } from "@/lib/lead/send-flow";
 import { cn } from "@/lib/utils";
 
 interface SendBarProps {
   recipientCount: number;
-  onSend?: () => void;
+  phase: SendPhase;
+  /** How many replies still outstanding — used for the awaiting label. */
+  awaitingCount: number;
+  /** How many agents have confirmed — used for the vendor CTA count. */
+  confirmedCount: number;
+  onSend: () => void;
+  onSendToVendor: () => void;
 }
 
-type SendState = "idle" | "sending" | "sent";
-
 /*
- * Desktop-only sticky send bar. Slides up from below on the first pick;
- * fades out when the count returns to zero. The recipient number itself
- * animates with a count-roll each time it changes (keyed by count).
+ * Desktop-only sticky send bar. Fully phase-driven now: the parent
+ * owns the fan-out state machine, this component just picks the right
+ * label + affordance for each phase.
  *
- * On click: the paper-plane icon lifts off (anim-send-fly), the label
- * flips to "Sending…" with pulsing dots for ~1.4s, then a "Sent ✓"
- * confirmation flashes before the button returns to idle. Demo-safe —
- * onSend is called immediately, the animation is purely feedback.
+ *   idle          → "Send to N agents"       (primary; only enabled if N>0)
+ *   sending       → "Sending to N…"          (busy, non-interactive)
+ *   awaiting      → "Waiting on N replies"   (busy, non-interactive)
+ *   ready_vendor  → "Send to Vendor →"       (primary; one-shot pulse)
+ *   vendor_sent   → "Vendor packet sent ✓"   (terminal, disabled)
  */
-export function SendBar({ recipientCount, onSend }: SendBarProps) {
-  const visible = recipientCount > 0;
-  const [state, setState] = useState<SendState>("idle");
-  const timer = useRef<number | null>(null);
+export function SendBar({
+  recipientCount,
+  phase,
+  awaitingCount,
+  confirmedCount,
+  onSend,
+  onSendToVendor,
+}: SendBarProps) {
+  const visible = recipientCount > 0 || phase !== "idle";
+  const busy = phase === "sending" || phase === "awaiting";
+  const vendorReady = phase === "ready_vendor";
+  const vendorSent = phase === "vendor_sent";
 
-  function handleSend() {
-    if (state !== "idle" || !visible) return;
-    onSend?.();
-    setState("sending");
-    if (timer.current) window.clearTimeout(timer.current);
-    timer.current = window.setTimeout(() => {
-      setState("sent");
-      timer.current = window.setTimeout(() => {
-        setState("idle");
-      }, 1600);
-    }, 1400);
+  function handleClick() {
+    if (vendorReady) return onSendToVendor();
+    if (phase === "idle") return onSend();
   }
-
-  const busy = state !== "idle";
 
   return (
     <div
@@ -53,35 +56,56 @@ export function SendBar({ recipientCount, onSend }: SendBarProps) {
       <div
         className={cn(
           "pointer-events-auto neu-raised px-4 py-3 flex items-center gap-4",
-          visible && "anim-slide-up"
+          visible && phase === "idle" && "anim-slide-up"
         )}
       >
         <div className="t-body">
-          <div className="text-text-muted t-caption">Recipients</div>
+          <div className="text-text-muted t-caption">
+            {phase === "idle"
+              ? "Recipients"
+              : phase === "sending"
+                ? "Sending"
+                : phase === "awaiting"
+                  ? "Awaiting"
+                  : phase === "ready_vendor"
+                    ? "Confirmed"
+                    : "Complete"}
+          </div>
           <div className="font-semibold flex items-baseline gap-1">
             <span
-              key={recipientCount}
+              key={phaseCount(phase, recipientCount, awaitingCount, confirmedCount)}
               className="inline-block anim-count-roll tabular"
             >
-              {recipientCount}
+              {phaseCount(phase, recipientCount, awaitingCount, confirmedCount)}
             </span>
-            <span>agent{recipientCount === 1 ? "" : "s"}</span>
+            <span>
+              agent
+              {phaseCount(phase, recipientCount, awaitingCount, confirmedCount) ===
+              1
+                ? ""
+                : "s"}
+            </span>
           </div>
         </div>
         <button
           type="button"
-          onClick={handleSend}
-          className="btn-accent-glass min-w-[168px] justify-center"
-          disabled={!visible || busy}
+          onClick={handleClick}
+          className={cn(
+            "btn-accent-glass min-w-[192px] justify-center",
+            vendorReady && "anim-vendor-pulse"
+          )}
+          disabled={
+            (phase === "idle" && recipientCount === 0) || busy || vendorSent
+          }
           aria-busy={busy}
         >
-          {state === "idle" ? (
+          {phase === "idle" ? (
             <>
               <Send size={16} />
               Send to <span className="tabular">{recipientCount}</span> agent
               {recipientCount === 1 ? "" : "s"}
             </>
-          ) : state === "sending" ? (
+          ) : phase === "sending" ? (
             <>
               <Send size={16} className="anim-send-fly" aria-hidden />
               <span className="flex items-center gap-0.5">
@@ -91,10 +115,21 @@ export function SendBar({ recipientCount, onSend }: SendBarProps) {
                 <span className="anim-pulse-dot anim-pulse-dot-3">.</span>
               </span>
             </>
+          ) : phase === "awaiting" ? (
+            <>
+              <Clock size={16} className="anim-pulse-soft" aria-hidden />
+              Waiting on <span className="tabular">{awaitingCount}</span> repl
+              {awaitingCount === 1 ? "y" : "ies"}
+            </>
+          ) : phase === "ready_vendor" ? (
+            <>
+              Send to Vendor
+              <ArrowRight size={16} aria-hidden />
+            </>
           ) : (
             <>
               <Check size={16} className="anim-spring" aria-hidden />
-              Sent
+              Vendor packet sent
             </>
           )}
         </button>
@@ -102,3 +137,16 @@ export function SendBar({ recipientCount, onSend }: SendBarProps) {
     </div>
   );
 }
+
+function phaseCount(
+  phase: SendPhase,
+  recipientCount: number,
+  awaitingCount: number,
+  confirmedCount: number
+): number {
+  if (phase === "idle") return recipientCount;
+  if (phase === "awaiting") return awaitingCount;
+  if (phase === "ready_vendor" || phase === "vendor_sent") return confirmedCount;
+  return recipientCount;
+}
+
