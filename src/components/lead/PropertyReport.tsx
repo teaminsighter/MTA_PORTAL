@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { Lead, PropertyFacts } from "@/lib/mock";
 import { LocationMap } from "@/components/lead/LocationMap";
+import { pickHeroPhoto } from "@/lib/lead/property-hero";
 import {
   cn,
   formatDateNZ,
@@ -40,9 +41,7 @@ interface Props {
 }
 
 export function PropertyReport({ lead, property }: Props) {
-  const heroUrl = `https://picsum.photos/seed/${encodeURIComponent(
-    lead.id
-  )}/1200/500`;
+  const heroUrl = pickHeroPhoto(lead.id);
   const narrative = buildNarrative(lead, property);
   const generatedAt = latestFetchedAt(property) ?? new Date().toISOString();
   const location = parseAddress(lead.address);

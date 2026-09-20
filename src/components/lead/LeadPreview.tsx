@@ -27,6 +27,7 @@ import { DataSourcesCard } from "@/components/lead/DataSourcesCard";
 import { StateChip } from "@/components/lead/StateChip";
 import { LoadingSkeleton } from "@/components/states/LoadingSkeleton";
 import { ErrorState } from "@/components/states/ErrorState";
+import { pickHeroPhoto } from "@/lib/lead/property-hero";
 import {
   cn,
   formatDateNZ,
@@ -129,9 +130,7 @@ export function LeadPreview({ lead }: Props) {
       ? Math.round(est / property.floor_area.value)
       : null;
 
-  const heroImageUrl = `https://picsum.photos/seed/${encodeURIComponent(
-    full.id
-  )}/960/360`;
+  const heroImageUrl = pickHeroPhoto(full.id);
 
   return (
     <div className="neu-raised p-6 flex flex-col gap-4 w-full anim-enter max-h-[calc(100dvh-8rem)] relative">
