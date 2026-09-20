@@ -58,5 +58,145 @@
     "first_seen_lead_id": "MTA-2026-00418",
     "confidence": "low",
     "reason_hint": "Single nearby sale."
+  },
+  {
+    "id": "CAND-2207",
+    "name": "Talia Novak",
+    "agency": "Ray White",
+    "phone": "+64 21 660 4471",
+    "email": "talia.n@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00419",
+    "confidence": "high",
+    "reason_hint": "Three comps within 500m; email domain matches an existing MTA record."
+  },
+  {
+    "id": "CAND-2208",
+    "name": "Ben Pomare",
+    "agency": "LJ Hooker",
+    "phone": "+64 22 445 9013",
+    "email": "ben.p@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00419",
+    "confidence": "medium",
+    "reason_hint": "Two nearby sales, no MTA history."
+  },
+  {
+    "id": "CAND-2209",
+    "name": "Josh Winters",
+    "agency": "LJ Hooker",
+    "phone": "+64 21 908 3345",
+    "email": "josh.w@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00417",
+    "confidence": "medium",
+    "reason_hint": "Sold two comps in Merivale in the last 4 months."
+  },
+  {
+    "id": "CAND-2210",
+    "name": "Amelia Reid",
+    "agency": "Ray White",
+    "phone": "+64 27 224 7761",
+    "email": "amelia.r@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00417",
+    "confidence": "low",
+    "reason_hint": "Single nearby sale; name doesn't normalise to any MTA record."
+  },
+  {
+    "id": "CAND-2211",
+    "name": "Kirsty Delaney",
+    "agency": "Ray White",
+    "phone": "+64 21 776 0092",
+    "email": "kirsty.d@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00416",
+    "confidence": "medium",
+    "reason_hint": "Two Bethlehem sales in the last 6 months."
+  },
+  {
+    "id": "CAND-2212",
+    "name": "Rangi Whata",
+    "agency": "LJ Hooker",
+    "phone": "+64 22 118 6640",
+    "email": "rangi.w@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00416",
+    "confidence": "low",
+    "reason_hint": "One nearby sale."
+  },
+  {
+    "id": "CAND-2213",
+    "name": "David Chen",
+    "agency": "Harcourts",
+    "phone": "+64 21 553 8820",
+    "email": "david.c@harcourts.co.nz",
+    "first_seen_lead_id": "MTA-2026-00415",
+    "confidence": "high",
+    "reason_hint": "Phone matches existing candidate record; three Devonport comps."
+  },
+  {
+    "id": "CAND-2214",
+    "name": "Moana Tipene",
+    "agency": "LJ Hooker",
+    "phone": "+64 27 331 9945",
+    "email": "moana.t@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00415",
+    "confidence": "medium",
+    "reason_hint": "Two nearby sales, no MTA record."
+  },
+  {
+    "id": "CAND-2215",
+    "name": "Grace Hollis",
+    "agency": "LJ Hooker",
+    "phone": "+64 21 664 2038",
+    "email": "grace.h@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00414",
+    "confidence": "medium",
+    "reason_hint": "Two Sumner sales; email doesn't match any MTA record."
+  },
+  {
+    "id": "CAND-2216",
+    "name": "Ravi Kapoor",
+    "agency": "Ray White",
+    "phone": "+64 22 990 5541",
+    "email": "ravi.k@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00414",
+    "confidence": "low",
+    "reason_hint": "Single nearby sale."
+  },
+  {
+    "id": "CAND-2217",
+    "name": "Nora Beaumont",
+    "agency": "Harcourts",
+    "phone": "+64 21 108 7745",
+    "email": "nora.b@harcourts.co.nz",
+    "first_seen_lead_id": "MTA-2026-00413",
+    "confidence": "medium",
+    "reason_hint": "Two Roseneath sales in the last 5 months."
+  },
+  {
+    "id": "CAND-2218",
+    "name": "Manaia Rewi",
+    "agency": "LJ Hooker",
+    "phone": "+64 27 442 1180",
+    "email": "manaia.r@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00413",
+    "confidence": "low",
+    "reason_hint": "One nearby sale; no MTA history."
+  },
+  {
+    "id": "CAND-2219",
+    "name": "Kate Sinclair",
+    "agency": "LJ Hooker",
+    "phone": "+64 21 774 9903",
+    "email": "kate.s@ljhooker.co.nz",
+    "first_seen_lead_id": "MTA-2026-00411",
+    "confidence": "medium",
+    "reason_hint": "Two Napier South sales in the last 4 months."
+  },
+  {
+    "id": "CAND-2220",
+    "name": "Hone Paora",
+    "agency": "Ray White",
+    "phone": "+64 22 335 6672",
+    "email": "hone.p@raywhite.co.nz",
+    "first_seen_lead_id": "MTA-2026-00411",
+    "confidence": "low",
+    "reason_hint": "Single nearby sale."
   }
 ]
