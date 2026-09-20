@@ -343,11 +343,13 @@ export default function LeadWorkspace({
           <div className="min-w-0">
             <div className="t-caption text-text-muted">{lead.id}</div>
             <h1 className="t-display leading-tight">{lead.address}</h1>
-            <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 t-body text-text-muted">
-              <span className="inline-flex items-center gap-1.5">
-                <User size={13} aria-hidden />
-                <span className="text-text font-medium">{lead.vendor_name}</span>
+            <div className="mt-3 flex items-center gap-2">
+              <User size={16} aria-hidden className="text-text-muted" />
+              <span className="t-section leading-tight">
+                {lead.vendor_name}
               </span>
+            </div>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 t-body text-text-muted">
               <span className="inline-flex items-center gap-1.5">
                 <PhoneIcon size={13} aria-hidden />
                 <span className="tabular">{lead.phone}</span>
