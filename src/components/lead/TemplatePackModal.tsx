@@ -474,6 +474,38 @@ function AutomationBanner({
 }
 
 /* ------------------------------------------------------------------ */
+/* Helpers used inside template bodies to render lead metadata as     */
+/* real text (source, intake date) rather than raw enum values.       */
+/* ------------------------------------------------------------------ */
+function leadSourceDescription(lead: Lead): string {
+  switch (lead.source) {
+    case "web":
+      return "mytopagent.co.nz web form";
+    case "ac_import":
+      return "ActiveCampaign import (existing contact)";
+    case "ac_manual":
+      return "Manually added by Sarah (phone intake)";
+    default:
+      return lead.source;
+  }
+}
+
+function formatIntakeDate(iso: string): string {
+  try {
+    const d = new Date(iso);
+    return d.toLocaleDateString("en-NZ", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* Template library. Agent + vendor templates for both channels,      */
 /* covering the whole lead lifecycle (intake → shortlist → packet →   */
 /* post-appraisal → post-sale). Personalisation tokens fill from the  */
@@ -511,6 +543,16 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       },
       {
         id: "S3",
+        title: "Brief just landed",
+        audience: "agent",
+        when: "On agent YES reply",
+        trigger: "agent replies YES to the intro pitch",
+        mode: "auto",
+        body:
+          `Cheers {{agent.name}} — full brief (vendor, property, comps) just landed in your inbox. Give me a call once you've had a look. — Sarah / MTA`,
+      },
+      {
+        id: "S4",
         title: "Final nudge",
         audience: "agent",
         when: "72h no reply",
@@ -600,25 +642,41 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
     },
     {
       id: "E3",
-      title: "Recap with property details",
+      title: "Agent brief — vendor + property + funnel",
       audience: "agent",
-      when: "When they ask for more",
-      trigger: "agent asks for the full brief",
-      mode: "manual",
-      subject: `${A} — snapshot`,
+      when: "On agent YES reply",
+      trigger: "agent replies YES to the intro pitch",
+      mode: "auto",
+      subject: `Full brief — ${A}`,
       body: [
-        `Hi {{agent.name}},`,
+        `Kia ora {{agent.name}},`,
         ``,
-        `Snapshot as requested:`,
-        `• Address: ${A}`,
-        `• Vendor: ${V}`,
-        `• CV: (from lead)`,
-        `• Land / floor / bed: (from lead)`,
-        `• Nearby sales: (from lead)`,
+        `Great — you're in. Here's the full brief so you can walk into the appraisal ready.`,
         ``,
-        `Let me know if you'd like the full comparables set.`,
+        `━━━━━━  VENDOR  ━━━━━━`,
+        `Name       ${V}`,
+        `Phone      ${vendor.phone}`,
+        `Email      ${vendor.email}`,
+        `Source     ${leadSourceDescription(vendor)}`,
+        `Received   ${formatIntakeDate(vendor.created_at)}`,
         ``,
-        `— Sarah`,
+        `━━━━━━  PROPERTY  ${A}  ━━━━━━`,
+        `CV                 {{property.cv}}`,
+        `Latest estimate    {{property.estimate}}  ({{property.delta_vs_cv}} vs CV)`,
+        `Land / floor       {{property.land}} / {{property.floor}}`,
+        `Bedrooms           {{property.bedrooms}}`,
+        `Year built         {{property.year_built}}`,
+        `Last sold          {{property.last_sold_date}} — {{property.last_sold_price}}`,
+        ``,
+        `━━━━━━  NEARBY SALES  ━━━━━━`,
+        `{{comps.count}} comparables in the last 6 months, median {{comps.median}}.`,
+        `Full list attached (property_report.pdf) and viewable in your MTA workspace.`,
+        ``,
+        `━━━━━━  NEXT STEP  ━━━━━━`,
+        `Reply with 2-3 time slots that suit you this week and I'll lock in the appraisal with {{vendor.first_name}}.`,
+        ``,
+        `Cheers,`,
+        `Sarah — MyTopAgent`,
       ].join("\n"),
     },
     {
