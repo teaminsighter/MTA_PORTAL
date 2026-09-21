@@ -47,6 +47,7 @@ import {
   derivePhase,
   type AgentRowStatus,
 } from "@/lib/lead/send-flow";
+import { agentRating } from "@/lib/lead/agent-rating";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -598,6 +599,7 @@ export default function LeadWorkspace({
           agency: a.agency,
           nearbySales: a.nearby_sales,
           membership: a.membership_status,
+          rating: agentRating(a),
         }))}
         nextLead={nextLead}
         onContinue={handleContinueToNext}
@@ -637,6 +639,7 @@ interface VendorAgent {
   agency: string;
   nearbySales: number;
   membership: "signed" | "verbal" | string;
+  rating: number;
 }
 
 function VendorSuccessModal({
@@ -709,49 +712,97 @@ function VendorSuccessModal({
             <EmailHeaderRow label="Subject" value={subject} strong />
           </div>
 
-          <div className="surface-flat p-5 flex flex-col gap-4">
-            <p className="t-body">Hi {firstName},</p>
-            <p className="t-body text-text-muted">
-              Based on recent sales in your area and their track record,
-              here are the agents I&apos;d recommend for{" "}
-              <span className="text-text font-medium">{vendor.address}</span>:
-            </p>
+          <div
+            className="surface-flat overflow-hidden flex flex-col"
+            style={{ background: "var(--surface)" }}
+          >
+            {/* Brand header inside the email body */}
+            <div
+              className="flex items-center gap-3 px-6 py-4 border-b"
+              style={{ borderColor: "var(--border)" }}
+            >
+              <div className="h-10 w-10 rounded-neu-sm flex items-center justify-center bg-white shadow-sm shrink-0 overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-mta.png"
+                  alt="MyTopAgent"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="t-body font-bold leading-tight">
+                  MyTopAgent
+                </div>
+                <div className="t-caption text-text-muted">
+                  Match with New Zealand&apos;s top-performing real estate
+                  agents
+                </div>
+              </div>
+            </div>
 
-            <ul className="flex flex-col gap-2.5">
-              {agents.map((a) => (
-                <li
-                  key={a.name}
-                  className="neu-raised-sm p-3 flex items-start gap-3"
-                >
-                  <div
-                    className="h-6 w-6 rounded-neu-pill flex items-center justify-center shrink-0 mt-0.5"
-                    style={{
-                      background: "var(--success-bg)",
-                      color: "var(--success)",
-                    }}
-                  >
-                    <Check size={13} aria-hidden />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="t-body font-semibold">{a.name}</span>
-                      <span className="t-caption text-text-muted">
-                        {a.agency}
-                      </span>
-                    </div>
-                    <div className="t-caption text-text-muted mt-0.5">
-                      {reasonLine(a)}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {/* Email body */}
+            <div className="px-6 py-5 flex flex-col gap-4">
+              <p className="t-body">Kia ora {firstName},</p>
+              <p className="t-body">
+                <span className="font-semibold">Great news</span> — {""}
+                {agents.length} top-performing agent
+                {agents.length === 1 ? "" : "s"} in your area{" "}
+                {agents.length === 1 ? "has" : "have"} confirmed and{" "}
+                {agents.length === 1 ? "is" : "are"} keen to pitch to sell{" "}
+                <span className="font-medium">{vendor.address}</span>.
+                We&apos;ve ranked them based on nearby sales, average days on
+                market and overall track record.
+              </p>
 
-            <p className="t-body text-text-muted">
-              Happy to arrange intros whenever suits — just reply to this
-              email or give me a call.
-            </p>
-            <p className="t-body">— Imran</p>
+              <ul className="flex flex-col gap-2.5">
+                {agents.map((a) => (
+                  <VendorAgentCard key={a.name} agent={a} />
+                ))}
+              </ul>
+
+              <div
+                className="p-3 rounded-neu-sm flex items-start gap-2.5"
+                style={{
+                  background: "var(--accent-soft-bg)",
+                  color: "var(--accent)",
+                }}
+              >
+                <Send size={14} className="mt-0.5 shrink-0" aria-hidden />
+                <p className="t-body">
+                  <span className="font-semibold">Ready to meet them?</span>{" "}
+                  Reply to this email with your preferred agent, or give me a
+                  call — I&apos;ll book you in.
+                </p>
+              </div>
+
+              {/* Signature block */}
+              <div
+                className="pt-3 mt-1 flex flex-col gap-0.5 border-t"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <p className="t-body">Ngā mihi,</p>
+                <p className="t-body font-bold">The MyTopAgent Team</p>
+                <p className="t-caption text-text-muted">
+                  Your consultant · MyTopAgent
+                </p>
+              </div>
+            </div>
+
+            {/* Email footer strip */}
+            <div
+              className="px-6 py-3 border-t flex items-center justify-between gap-3 flex-wrap"
+              style={{
+                borderColor: "var(--border)",
+                background: "var(--neutral-bg)",
+              }}
+            >
+              <span className="t-caption text-text-subtle">
+                MyTopAgent · mytopagent.co.nz · Auckland, NZ
+              </span>
+              <span className="t-caption text-text-subtle">
+                This is a private introduction. Please don&apos;t forward.
+              </span>
+            </div>
           </div>
         </div>
 
@@ -812,8 +863,60 @@ function EmailHeaderRow({
   );
 }
 
-function reasonLine(a: VendorAgent): string {
-  const membership =
-    a.membership === "signed" ? "Signed MTA agent" : "Verbal agreement";
-  return `${membership} · ${a.nearbySales} nearby sale${a.nearbySales === 1 ? "" : "s"}`;
+function VendorAgentCard({ agent }: { agent: VendorAgent }) {
+  const membershipLabel =
+    agent.membership === "signed" ? "Signed MTA agent" : "Verbal agreement";
+  const ratingPalette =
+    agent.rating >= 8.5
+      ? { bg: "var(--success-bg)", fg: "var(--success)" }
+      : agent.rating >= 7
+        ? { bg: "var(--warning-bg)", fg: "var(--warning)" }
+        : { bg: "var(--neutral-bg)", fg: "var(--text-muted)" };
+  return (
+    <li
+      className="p-3.5 rounded-neu-sm flex items-start gap-3 border transition-colors"
+      style={{
+        borderColor: "var(--border)",
+        background: "var(--surface-elevated, var(--surface))",
+      }}
+    >
+      <span
+        className="shrink-0 h-11 min-w-[46px] px-2 rounded-neu-sm flex flex-col items-center justify-center tabular font-bold"
+        style={{ background: ratingPalette.bg, color: ratingPalette.fg }}
+        aria-label={`Rating ${agent.rating.toFixed(1)} out of 10`}
+      >
+        <span className="text-[15px] leading-tight">
+          {agent.rating.toFixed(1)}
+        </span>
+        <span className="text-[9px] font-medium opacity-80 leading-tight">
+          / 10
+        </span>
+      </span>
+      <div className="min-w-0 flex-1 flex flex-col gap-1">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="t-body font-semibold">{agent.name}</span>
+          <span className="t-caption text-text-muted">{agent.agency}</span>
+        </div>
+        <ul className="flex flex-wrap gap-x-3 gap-y-0.5 t-caption text-text-muted">
+          <li className="inline-flex items-center gap-1">
+            <Check
+              size={11}
+              aria-hidden
+              style={{ color: "var(--success)" }}
+            />
+            {membershipLabel}
+          </li>
+          <li className="inline-flex items-center gap-1 tabular">
+            <Check
+              size={11}
+              aria-hidden
+              style={{ color: "var(--success)" }}
+            />
+            {agent.nearbySales} nearby sale
+            {agent.nearbySales === 1 ? "" : "s"}
+          </li>
+        </ul>
+      </div>
+    </li>
+  );
 }
