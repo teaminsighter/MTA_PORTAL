@@ -130,7 +130,7 @@ export function CandidateRow({
           onCombo={() => console.log("[demo] combo candidate", candidate.name)}
         />
 
-        {picked ? (
+        {onConfirm || onDecline ? (
           <div className="flex items-center gap-1 shrink-0">
             <button
               type="button"
