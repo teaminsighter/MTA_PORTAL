@@ -211,7 +211,7 @@ export function TemplatePackModal({
             </TemplateGroup>
           </div>
 
-          <div className="flex flex-col p-5 gap-3 min-h-0">
+          <div className="flex flex-col p-5 gap-3 min-h-0 min-w-0">
             {active ? (
               <AutomationBanner
                 template={active}
