@@ -684,7 +684,7 @@ function VendorSuccessModal({
         onClick={onClose}
         className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade-in"
       />
-      <div className="relative neu-raised max-w-2xl w-full max-h-[92vh] overflow-y-auto flex flex-col anim-modal-in">
+      <div className="relative neu-raised max-w-4xl w-full max-h-[92vh] overflow-y-auto flex flex-col anim-modal-in">
         {/* --- Modal header: sent confirmation strip --- */}
         <div className="flex items-center gap-3 px-6 py-4 border-b border-border-strong/60 shrink-0">
           <div
