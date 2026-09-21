@@ -449,18 +449,25 @@ function AutomationBanner({
         aria-label={
           isAuto ? "Switch to manual send" : "Switch to auto-send"
         }
+        title={isAuto ? "Click to switch to manual" : "Click to enable auto-send"}
         className={cn(
-          "relative h-6 w-11 rounded-full transition-colors shrink-0",
-          isAuto ? "bg-[color:var(--warning)]" : "bg-neutral-bg neu-raised-sm"
+          "shrink-0 h-8 px-3 rounded-neu-pill flex items-center gap-1.5 t-caption font-semibold transition-colors",
+          isAuto
+            ? "text-on-accent"
+            : "neu-raised-sm text-text-muted hover:text-text"
         )}
+        style={
+          isAuto
+            ? { background: "var(--warning)", color: "white" }
+            : undefined
+        }
       >
-        <span
-          aria-hidden
-          className={cn(
-            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-            isAuto ? "translate-x-[22px]" : "translate-x-0.5"
-          )}
-        />
+        {isAuto ? (
+          <Zap size={12} aria-hidden />
+        ) : (
+          <HandMetal size={12} aria-hidden />
+        )}
+        <span>{isAuto ? "Automated" : "Manual"}</span>
       </button>
     </div>
   );
