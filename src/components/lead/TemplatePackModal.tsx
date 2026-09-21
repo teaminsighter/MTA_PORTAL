@@ -1,11 +1,22 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Mail, MessageSquare, X } from "lucide-react";
+import {
+  Copy,
+  HandMetal,
+  Mail,
+  MessageSquare,
+  UserRound,
+  Users,
+  X,
+  Zap,
+} from "lucide-react";
 import type { Lead } from "@/lib/mock";
 import { cn } from "@/lib/utils";
 
 type Kind = "sms" | "email";
+type Audience = "agent" | "vendor";
+type Mode = "auto" | "manual";
 
 interface TemplatePackModalProps {
   open: boolean;
@@ -17,8 +28,14 @@ interface TemplatePackModalProps {
 interface Template {
   id: string;
   title: string;
-  audience: "agent" | "vendor";
+  audience: Audience;
+  /** Human-readable trigger, shown in sidebar (e.g. "24h no reply"). */
   when: string;
+  /** Longer trigger phrase used in the automation banner. */
+  trigger: string;
+  /** Default automation posture. Auto = fires on the trigger event without
+      Sarah lifting a finger. Manual = only sent when she clicks send. */
+  mode: Mode;
   body: string;
   subject?: string;
 }
@@ -29,6 +46,12 @@ interface Template {
  * personalisation tokens ({{vendor.name}}, {{property.address}},
  * {{agent.name}}, {{sarah.name}}) which the demo fills from the
  * current lead. Real sends go through the dispatcher.
+ *
+ * The sidebar groups by audience (Agent vs Vendor) so the two
+ * lifecycles read separately. Each template carries a mode
+ * (auto/manual) — Sarah can flip a template between "fires
+ * automatically on trigger X" and "I'll send it myself" from the
+ * banner above the editor.
  */
 export function TemplatePackModal({
   open,
@@ -41,6 +64,17 @@ export function TemplatePackModal({
   const [draft, setDraft] = useState<string>(templates[0]?.body ?? "");
   const [subject, setSubject] = useState<string>(templates[0]?.subject ?? "");
   const [copied, setCopied] = useState(false);
+  /*
+   * Local overrides for automation mode. Demo-only: lets the client see
+   * the auto ↔ manual toggle actually flip. Keyed by template id so
+   * flipping one doesn't affect the others; reset when the modal closes.
+   */
+  const [modeOverrides, setModeOverrides] = useState<Record<string, Mode>>({});
+
+  const active = templates.find((t) => t.id === activeId) ?? templates[0];
+  const activeMode: Mode = active
+    ? (modeOverrides[active.id] ?? active.mode)
+    : "manual";
 
   useEffect(() => {
     if (!open) return;
@@ -48,6 +82,7 @@ export function TemplatePackModal({
     setDraft(templates[0]?.body ?? "");
     setSubject(templates[0]?.subject ?? "");
     setCopied(false);
+    setModeOverrides({});
   }, [open, templates]);
 
   useEffect(() => {
@@ -68,6 +103,14 @@ export function TemplatePackModal({
     setCopied(false);
   }
 
+  function toggleMode() {
+    if (!active) return;
+    setModeOverrides((prev) => ({
+      ...prev,
+      [active.id]: activeMode === "auto" ? "manual" : "auto",
+    }));
+  }
+
   async function copyDraft() {
     try {
       const payload =
@@ -79,6 +122,12 @@ export function TemplatePackModal({
       /* ignore */
     }
   }
+
+  const agentTemplates = templates.filter((t) => t.audience === "agent");
+  const vendorTemplates = templates.filter((t) => t.audience === "vendor");
+  const autoCount = templates.filter(
+    (t) => (modeOverrides[t.id] ?? t.mode) === "auto"
+  ).length;
 
   if (!open) return null;
 
@@ -107,8 +156,12 @@ export function TemplatePackModal({
             <h2 id="template-pack-title" className="t-section">
               {kind === "sms" ? "SMS pack" : "Email pack"}
             </h2>
-            <span className="chip chip-neutral">
+            <span className="chip chip-neutral tabular">
               {templates.length} templates
+            </span>
+            <span className="chip chip-warning tabular flex items-center gap-1">
+              <Zap size={11} aria-hidden />
+              {autoCount} automated
             </span>
           </div>
           <button
@@ -121,30 +174,52 @@ export function TemplatePackModal({
           </button>
         </div>
 
-        <div className="grid md:grid-cols-[220px_1fr] flex-1 min-h-0">
-          <ul className="border-b md:border-b-0 md:border-r border-border-strong overflow-y-auto p-2 flex flex-row md:flex-col gap-1 shrink-0">
-            {templates.map((t) => (
-              <li key={t.id} className="shrink-0">
-                <button
-                  type="button"
-                  onClick={() => selectTemplate(t.id)}
-                  className={cn(
-                    "w-full text-left px-3 py-2 rounded-neu-sm transition-colors",
-                    activeId === t.id
-                      ? "neu-inset-sm text-text"
-                      : "hover:bg-neutral-bg text-text-muted"
-                  )}
-                >
-                  <div className="t-body font-medium truncate">{t.title}</div>
-                  <div className="t-caption text-text-subtle truncate">
-                    {t.audience === "vendor" ? "Vendor" : "Agent"} · {t.when}
-                  </div>
-                </button>
-              </li>
-            ))}
-          </ul>
+        <div className="grid md:grid-cols-[260px_1fr] flex-1 min-h-0">
+          <div className="border-b md:border-b-0 md:border-r border-border-strong overflow-y-auto p-3 flex flex-col gap-4 shrink-0">
+            <TemplateGroup
+              icon={<UserRound size={12} aria-hidden />}
+              label="To agent"
+              count={agentTemplates.length}
+              tone="agent"
+            >
+              {agentTemplates.map((t) => (
+                <TemplateRow
+                  key={t.id}
+                  template={t}
+                  active={activeId === t.id}
+                  mode={modeOverrides[t.id] ?? t.mode}
+                  onSelect={() => selectTemplate(t.id)}
+                />
+              ))}
+            </TemplateGroup>
+
+            <TemplateGroup
+              icon={<Users size={12} aria-hidden />}
+              label="To vendor"
+              count={vendorTemplates.length}
+              tone="vendor"
+            >
+              {vendorTemplates.map((t) => (
+                <TemplateRow
+                  key={t.id}
+                  template={t}
+                  active={activeId === t.id}
+                  mode={modeOverrides[t.id] ?? t.mode}
+                  onSelect={() => selectTemplate(t.id)}
+                />
+              ))}
+            </TemplateGroup>
+          </div>
 
           <div className="flex flex-col p-5 gap-3 min-h-0">
+            {active ? (
+              <AutomationBanner
+                template={active}
+                mode={activeMode}
+                onToggle={toggleMode}
+              />
+            ) : null}
+
             {kind === "email" ? (
               <label className="flex flex-col gap-1">
                 <span className="t-caption text-text-muted">Subject</span>
@@ -202,10 +277,204 @@ export function TemplatePackModal({
 }
 
 /* ------------------------------------------------------------------ */
+/* Sidebar group — an audience header + the templates that target it. */
+/* Colour-coded so agent vs vendor read at a glance instead of Sarah  */
+/* having to read the small "Agent" / "Vendor" hint under each row.   */
+/* ------------------------------------------------------------------ */
+function TemplateGroup({
+  icon,
+  label,
+  count,
+  tone,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  count: number;
+  tone: "agent" | "vendor";
+  children: React.ReactNode;
+}) {
+  const palette =
+    tone === "agent"
+      ? { bg: "var(--accent-soft-bg)", fg: "var(--accent)" }
+      : { bg: "var(--info-bg)", fg: "var(--info)" };
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div
+        className="flex items-center gap-1.5 px-2 py-1 rounded-neu-sm w-fit"
+        style={{ background: palette.bg, color: palette.fg }}
+      >
+        {icon}
+        <span className="t-caption font-semibold uppercase tracking-wide">
+          {label}
+        </span>
+        <span className="t-caption tabular">·</span>
+        <span className="t-caption tabular">{count}</span>
+      </div>
+      <ul className="flex flex-col gap-1">{children}</ul>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Sidebar row — one template. Shows title, trigger, and the current  */
+/* automation posture with a small icon (⚡ auto / ✋ manual).         */
+/* ------------------------------------------------------------------ */
+function TemplateRow({
+  template,
+  active,
+  mode,
+  onSelect,
+}: {
+  template: Template;
+  active: boolean;
+  mode: Mode;
+  onSelect: () => void;
+}) {
+  const isAuto = mode === "auto";
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onSelect}
+        className={cn(
+          "w-full text-left px-2.5 py-2 rounded-neu-sm transition-colors flex items-start gap-2",
+          active
+            ? "neu-inset-sm text-text"
+            : "hover:bg-neutral-bg text-text-muted"
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "mt-1 h-1.5 w-1.5 rounded-full shrink-0",
+            active ? "opacity-100" : "opacity-60"
+          )}
+          style={{
+            background:
+              template.audience === "agent"
+                ? "var(--accent)"
+                : "var(--info)",
+          }}
+        />
+        <div className="min-w-0 flex-1">
+          <div className="t-body font-medium truncate">{template.title}</div>
+          <div className="t-caption text-text-subtle truncate">
+            {template.when}
+          </div>
+        </div>
+        <span
+          title={isAuto ? "Auto-sends on trigger" : "Manual send only"}
+          aria-label={isAuto ? "Automated" : "Manual"}
+          className={cn(
+            "shrink-0 h-5 w-5 rounded-neu-sm flex items-center justify-center",
+            isAuto ? "text-[color:var(--warning)]" : "text-text-subtle"
+          )}
+          style={
+            isAuto
+              ? { background: "var(--warning-bg)" }
+              : { background: "var(--neutral-bg)" }
+          }
+        >
+          {isAuto ? (
+            <Zap size={11} aria-hidden />
+          ) : (
+            <HandMetal size={11} aria-hidden />
+          )}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Automation banner — sits above subject/body. Names the trigger     */
+/* event that fires the template (or the fact that it's manual) and   */
+/* offers a toggle so Sarah can flip between the two.                 */
+/* ------------------------------------------------------------------ */
+function AutomationBanner({
+  template,
+  mode,
+  onToggle,
+}: {
+  template: Template;
+  mode: Mode;
+  onToggle: () => void;
+}) {
+  const isAuto = mode === "auto";
+  const audienceLabel = template.audience === "agent" ? "agent" : "vendor";
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 px-3 py-2.5 rounded-neu-sm border transition-colors",
+        isAuto
+          ? "border-[color:var(--warning)]/30"
+          : "border-border-strong"
+      )}
+      style={{
+        background: isAuto
+          ? "color-mix(in oklab, var(--warning-bg) 70%, transparent)"
+          : "var(--neutral-bg)",
+      }}
+    >
+      <div
+        className="h-8 w-8 rounded-neu-sm flex items-center justify-center shrink-0"
+        style={
+          isAuto
+            ? { background: "var(--warning-bg)", color: "var(--warning)" }
+            : { background: "var(--surface)", color: "var(--text-muted)" }
+        }
+      >
+        {isAuto ? (
+          <Zap size={14} aria-hidden />
+        ) : (
+          <HandMetal size={14} aria-hidden />
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="t-body font-semibold">
+          {isAuto ? "Sends automatically" : "Manual send only"}
+        </div>
+        <div className="t-caption text-text-muted truncate">
+          {isAuto
+            ? `Fires to the ${audienceLabel} when: ${template.trigger}`
+            : `You'll send this to the ${audienceLabel} yourself — no trigger.`}
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        role="switch"
+        aria-checked={isAuto}
+        aria-label={
+          isAuto ? "Switch to manual send" : "Switch to auto-send"
+        }
+        className={cn(
+          "relative h-6 w-11 rounded-full transition-colors shrink-0",
+          isAuto ? "bg-[color:var(--warning)]" : "bg-neutral-bg neu-raised-sm"
+        )}
+      >
+        <span
+          aria-hidden
+          className={cn(
+            "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
+            isAuto ? "translate-x-[22px]" : "translate-x-0.5"
+          )}
+        />
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Template library. Agent + vendor templates for both channels,      */
 /* covering the whole lead lifecycle (intake → shortlist → packet →   */
 /* post-appraisal → post-sale). Personalisation tokens fill from the  */
 /* current lead so the preview is production-y.                       */
+/*                                                                    */
+/* mode = default automation posture; Sarah can override from the UI. */
+/* Auto templates fire without her lifting a finger on the trigger    */
+/* event. Manual templates need a deliberate send.                    */
 /* ------------------------------------------------------------------ */
 function buildTemplates(kind: Kind, vendor: Lead): Template[] {
   const V = vendor.vendor_name;
@@ -218,6 +487,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Intro pitch",
         audience: "agent",
         when: "First send",
+        trigger: "shortlist confirmed & Send fires",
+        mode: "auto",
         body:
           `Hi {{agent.name}}, MyTopAgent here. We've matched you for ${A} — vendor ${V}. Interested? Reply YES for the brief, STOP to opt out.`,
       },
@@ -226,6 +497,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "24h follow-up",
         audience: "agent",
         when: "24h no reply",
+        trigger: "24h after intro, still no reply",
+        mode: "auto",
         body:
           `Kia ora {{agent.name}}, quick nudge — ${A} vendor is shortlisting today. Still keen? Reply YES / NO.`,
       },
@@ -234,6 +507,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Final nudge",
         audience: "agent",
         when: "72h no reply",
+        trigger: "72h after intro, still no reply",
+        mode: "manual",
         body:
           `Last check on ${A} — vendor picks tonight. YES to opt in, no reply = we move on. Cheers, Sarah / MTA. Reply STOP to opt out.`,
       },
@@ -242,6 +517,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Welcome — enquiry received",
         audience: "vendor",
         when: "Right after intake",
+        trigger: "lead lands in the inbox",
+        mode: "auto",
         body:
           `Kia ora ${V}, Sarah from MyTopAgent. Got your enquiry for ${A} — I'm lining up 3 top local agents and will be back within 24h with the shortlist. Any Qs, reply here.`,
       },
@@ -250,6 +527,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Shortlist in progress",
         audience: "vendor",
         when: "12h after intake",
+        trigger: "12h after intake, no packet sent yet",
+        mode: "auto",
         body:
           `Hi ${V}, quick update — 3 top agents in your suburb are reviewing ${A} now. First replies are landing. I'll send the full packet once they've all confirmed. — Sarah`,
       },
@@ -258,6 +537,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Vendor packet ready",
         audience: "vendor",
         when: "On agent confirmations",
+        trigger: "vendor packet sent from workspace",
+        mode: "auto",
         body:
           `Hi ${V}, your matched agents are confirmed and their briefs are in your inbox now. Give it a read — I'll ring in 10 to walk you through.`,
       },
@@ -266,6 +547,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         title: "Post-appraisal check-in",
         audience: "vendor",
         when: "2 days after meeting",
+        trigger: "2 days after appraisal booking",
+        mode: "manual",
         body:
           `Hi ${V}, how did the appraisal go? Happy to help you compare or line up another agent if it wasn't the right fit. — Sarah`,
       },
@@ -278,6 +561,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Intro pitch — full context",
       audience: "agent",
       when: "First send",
+      trigger: "shortlist confirmed & Send fires",
+      mode: "auto",
       subject: `Vendor match for ${A}`,
       body: [
         `Kia ora {{agent.name}},`,
@@ -295,6 +580,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "24h follow-up",
       audience: "agent",
       when: "24h no reply",
+      trigger: "24h after intro, still no reply",
+      mode: "auto",
       subject: `Still keen on ${A}?`,
       body: [
         `Hi {{agent.name}},`,
@@ -309,6 +596,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Recap with property details",
       audience: "agent",
       when: "When they ask for more",
+      trigger: "agent asks for the full brief",
+      mode: "manual",
       subject: `${A} — snapshot`,
       body: [
         `Hi {{agent.name}},`,
@@ -330,6 +619,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Welcome — enquiry received",
       audience: "vendor",
       when: "Right after intake",
+      trigger: "lead lands in the inbox",
+      mode: "auto",
       subject: `We've got your enquiry for ${A}`,
       body: [
         `Kia ora ${V},`,
@@ -352,6 +643,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Shortlist in progress",
       audience: "vendor",
       when: "12h after intake",
+      trigger: "12h after intake, no packet sent yet",
+      mode: "auto",
       subject: `Update on ${A} — shortlist coming together`,
       body: [
         `Hi ${V},`,
@@ -370,6 +663,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Vendor packet (the shortlist)",
       audience: "vendor",
       when: "On Send to vendor",
+      trigger: "Send-to-Vendor clicked in the workspace",
+      mode: "auto",
       subject: `Your matched agents for ${A}`,
       body: [
         `Kia ora ${V},`,
@@ -396,6 +691,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Post-appraisal check-in",
       audience: "vendor",
       when: "2 days after meeting",
+      trigger: "2 days after appraisal booking",
+      mode: "manual",
       subject: `How did the appraisal go for ${A}?`,
       body: [
         `Hi ${V},`,
@@ -416,6 +713,8 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       title: "Post-sale thanks + review",
       audience: "vendor",
       when: "After sold state",
+      trigger: "lead state moves to sold",
+      mode: "manual",
       subject: `Congrats on the sale of ${A}`,
       body: [
         `Kia ora ${V},`,
