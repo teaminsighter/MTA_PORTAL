@@ -145,7 +145,7 @@ export function TemplatePackModal({
         className="absolute inset-0 bg-black/40 backdrop-blur-sm anim-fade-in"
       />
 
-      <div className="relative neu-raised w-full max-w-3xl flex flex-col max-h-[86dvh] anim-modal-in">
+      <div className="relative neu-raised w-full max-w-5xl flex flex-col max-h-[90dvh] anim-modal-in">
         <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border-strong">
           <div className="flex items-center gap-2 min-w-0">
             {kind === "sms" ? (
@@ -174,7 +174,7 @@ export function TemplatePackModal({
           </button>
         </div>
 
-        <div className="grid md:grid-cols-[260px_1fr] flex-1 min-h-0">
+        <div className="grid md:grid-cols-[280px_1fr] flex-1 min-h-0">
           <div className="border-b md:border-b-0 md:border-r border-border-strong overflow-y-auto p-3 flex flex-col gap-4 shrink-0">
             <TemplateGroup
               icon={<UserRound size={12} aria-hidden />}
@@ -242,7 +242,7 @@ export function TemplatePackModal({
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="neu-input resize-none flex-1 min-h-[220px] font-mono text-[13px] leading-6"
+                className="neu-input resize-none flex-1 min-h-[340px] font-mono text-[14px] leading-6"
                 spellCheck
               />
             </label>
