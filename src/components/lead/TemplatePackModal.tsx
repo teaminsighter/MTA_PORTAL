@@ -202,9 +202,10 @@ export function TemplatePackModal({
 }
 
 /* ------------------------------------------------------------------ */
-/* Template library. 3 SMS + 3 Email agent templates, 1 vendor packet */
-/* per channel — the seven the plan settled on. Personalisation       */
-/* tokens fill from the current lead so the preview is production-y.  */
+/* Template library. Agent + vendor templates for both channels,      */
+/* covering the whole lead lifecycle (intake → shortlist → packet →   */
+/* post-appraisal → post-sale). Personalisation tokens fill from the  */
+/* current lead so the preview is production-y.                       */
 /* ------------------------------------------------------------------ */
 function buildTemplates(kind: Kind, vendor: Lead): Template[] {
   const V = vendor.vendor_name;
@@ -238,11 +239,35 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       },
       {
         id: "SV1",
+        title: "Welcome — enquiry received",
+        audience: "vendor",
+        when: "Right after intake",
+        body:
+          `Kia ora ${V}, Sarah from MyTopAgent. Got your enquiry for ${A} — I'm lining up 3 top local agents and will be back within 24h with the shortlist. Any Qs, reply here.`,
+      },
+      {
+        id: "SV2",
+        title: "Shortlist in progress",
+        audience: "vendor",
+        when: "12h after intake",
+        body:
+          `Hi ${V}, quick update — 3 top agents in your suburb are reviewing ${A} now. First replies are landing. I'll send the full packet once they've all confirmed. — Sarah`,
+      },
+      {
+        id: "SV3",
         title: "Vendor packet ready",
         audience: "vendor",
         when: "On agent confirmations",
         body:
-          `Hi ${V}, your three matched agents are confirmed and their briefs are with you now. Check your inbox — we'll ring in 10.`,
+          `Hi ${V}, your matched agents are confirmed and their briefs are in your inbox now. Give it a read — I'll ring in 10 to walk you through.`,
+      },
+      {
+        id: "SV4",
+        title: "Post-appraisal check-in",
+        audience: "vendor",
+        when: "2 days after meeting",
+        body:
+          `Hi ${V}, how did the appraisal go? Happy to help you compare or line up another agent if it wasn't the right fit. — Sarah`,
       },
     ];
   }
@@ -302,7 +327,47 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
     },
     {
       id: "EV1",
-      title: "Vendor packet (the last email)",
+      title: "Welcome — enquiry received",
+      audience: "vendor",
+      when: "Right after intake",
+      subject: `We've got your enquiry for ${A}`,
+      body: [
+        `Kia ora ${V},`,
+        ``,
+        `Thanks for coming to MyTopAgent. I'm Sarah, your consultant — I'll be your single point of contact from now through to the day your home sells.`,
+        ``,
+        `Here's what happens next:`,
+        `  1. I'll match you with the top 3 performing agents in your suburb (usually done within the hour).`,
+        `  2. They confirm they're keen — I'll send you their profiles, recent nearby sales and expected sale timeframe.`,
+        `  3. You choose who to meet with. No pressure, no obligation.`,
+        ``,
+        `Any questions in the meantime, reply to this email or call me directly.`,
+        ``,
+        `Ngā mihi,`,
+        `Sarah — MyTopAgent`,
+      ].join("\n"),
+    },
+    {
+      id: "EV2",
+      title: "Shortlist in progress",
+      audience: "vendor",
+      when: "12h after intake",
+      subject: `Update on ${A} — shortlist coming together`,
+      body: [
+        `Hi ${V},`,
+        ``,
+        `Quick progress note — I've reached out to 3 of the top-performing agents in your suburb. Their recent nearby sales, average days on market and performance track record all look strong.`,
+        ``,
+        `Two have already come back keen; waiting on the third. I'll send the full packet with all their details as soon as we hear back (usually within 24 hours of the first outreach).`,
+        ``,
+        `You don't need to do anything yet — I'll be in touch.`,
+        ``,
+        `— Sarah`,
+      ].join("\n"),
+    },
+    {
+      id: "EV3",
+      title: "Vendor packet (the shortlist)",
       audience: "vendor",
       when: "On Send to vendor",
       subject: `Your matched agents for ${A}`,
@@ -323,6 +388,45 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         `Reply to this email with your preferred agent, or call me on +64 …`,
         ``,
         `Ngā mihi,`,
+        `Sarah — MyTopAgent`,
+      ].join("\n"),
+    },
+    {
+      id: "EV4",
+      title: "Post-appraisal check-in",
+      audience: "vendor",
+      when: "2 days after meeting",
+      subject: `How did the appraisal go for ${A}?`,
+      body: [
+        `Hi ${V},`,
+        ``,
+        `Hope the meeting went well. Wanted to check in and see:`,
+        ``,
+        `  • Did the appraisal feel realistic for the current market?`,
+        `  • Was the marketing plan clear?`,
+        `  • Any questions I can help unpack — commission, timeline, method of sale?`,
+        ``,
+        `If it wasn't the right fit, no problem — I can line up another agent from the shortlist. Just let me know.`,
+        ``,
+        `— Sarah`,
+      ].join("\n"),
+    },
+    {
+      id: "EV5",
+      title: "Post-sale thanks + review",
+      audience: "vendor",
+      when: "After sold state",
+      subject: `Congrats on the sale of ${A}`,
+      body: [
+        `Kia ora ${V},`,
+        ``,
+        `Congratulations on the sale — massive result. It's been a pleasure working with you from that first enquiry through to today.`,
+        ``,
+        `Two small asks, only if you have a minute:`,
+        `  1. A short review of your experience with MyTopAgent — it helps other vendors know what to expect.`,
+        `  2. If you know anyone else thinking of selling, we'd love an introduction.`,
+        ``,
+        `Ngā mihi nui,`,
         `Sarah — MyTopAgent`,
       ].join("\n"),
     },
