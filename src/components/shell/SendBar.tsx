@@ -11,6 +11,14 @@ interface SendBarProps {
   awaitingCount: number;
   /** How many agents have confirmed — used for the vendor CTA count. */
   confirmedCount: number;
+  /** Confirmed agents who haven't already received the full brief
+      (i.e. the manually-confirmed ones; agents who replied YES via
+      SMS/email already had it auto-fired). Drives the opt-in copy. */
+  briefsNeededCount?: number;
+  /** Opt-in: also fire the full brief to every confirmed agent on
+      Send-to-Vendor. Deduped against agents already briefed. */
+  briefAgents?: boolean;
+  onToggleBriefAgents?: () => void;
   onSend: () => void;
   onSendToVendor: () => void;
 }
@@ -31,6 +39,9 @@ export function SendBar({
   phase,
   awaitingCount,
   confirmedCount,
+  briefsNeededCount = 0,
+  briefAgents = true,
+  onToggleBriefAgents,
   onSend,
   onSendToVendor,
 }: SendBarProps) {
@@ -87,6 +98,28 @@ export function SendBar({
             </span>
           </div>
         </div>
+        {vendorReady && onToggleBriefAgents ? (
+          <label className="flex items-start gap-2 max-w-[220px] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={briefAgents}
+              onChange={onToggleBriefAgents}
+              className="mt-0.5 h-4 w-4 accent-[color:var(--accent)] cursor-pointer"
+            />
+            <span className="flex flex-col leading-tight">
+              <span className="t-caption font-medium">
+                Also brief confirmed agents
+              </span>
+              <span className="t-caption text-text-subtle tabular">
+                {briefsNeededCount} to send
+                {briefsNeededCount > 0
+                  ? " · rest already briefed"
+                  : " · all already briefed"}
+              </span>
+            </span>
+          </label>
+        ) : null}
+
         <button
           type="button"
           onClick={handleClick}

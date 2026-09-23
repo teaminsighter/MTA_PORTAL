@@ -545,8 +545,9 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
         id: "S3",
         title: "Brief just landed",
         audience: "agent",
-        when: "On agent YES reply",
-        trigger: "agent replies YES to the intro pitch",
+        when: "On YES reply · or Send-to-Vendor",
+        trigger:
+          "agent replies YES to the intro OR their name lands on the vendor packet (deduped)",
         mode: "auto",
         body:
           `Cheers {{agent.name}} — full brief (vendor, property, comps) just landed in your inbox. Give me a call once you've had a look. — Sarah / MTA`,
@@ -644,8 +645,9 @@ function buildTemplates(kind: Kind, vendor: Lead): Template[] {
       id: "E3",
       title: "Agent brief — vendor + property + funnel",
       audience: "agent",
-      when: "On agent YES reply",
-      trigger: "agent replies YES to the intro pitch",
+      when: "On YES reply · or Send-to-Vendor",
+      trigger:
+        "agent replies YES to the intro OR their name lands on the vendor packet (deduped)",
       mode: "auto",
       subject: `Full brief — ${A}`,
       body: [

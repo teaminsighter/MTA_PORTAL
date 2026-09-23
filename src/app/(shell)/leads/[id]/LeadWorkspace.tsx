@@ -266,9 +266,19 @@ export default function LeadWorkspace({
   const [templatePack, setTemplatePack] = useState<"sms" | "email" | null>(
     null
   );
+  /*
+   * Send-time opt-in: also fire the full agent brief to every
+   * confirmed agent when the vendor packet goes out. Dedupes against
+   * agents who already got the brief via the auto-YES reply path.
+   * Default on — Sarah can uncheck if she's already briefed everyone
+   * manually.
+   */
+  const [briefAgentsOnSend, setBriefAgentsOnSend] = useState(true);
+  const [briefsSentCount, setBriefsSentCount] = useState(0);
 
   function handleSendToVendor() {
     setVendorSent(true);
+    setBriefsSentCount(briefAgentsOnSend ? briefsNeededCount : 0);
     setVendorModalOpen(true);
   }
 
@@ -313,6 +323,21 @@ export default function LeadWorkspace({
       .filter((e) => e.pick !== null && statuses.get(e.agent.id)?.reply === "yes")
       .map((e) => e.agent);
   }, [optimisticShortlist, statuses]);
+
+  /*
+   * Agents who confirmed manually (Sarah's ✓ button) rather than via
+   * the auto SMS/email YES reply path. These are the ones the auto
+   * brief never fired for — so at Send-to-Vendor time, if the opt-in
+   * is on, they're the ones that need the brief now. Everyone else
+   * (auto-confirmed) already got it and gets deduped.
+   */
+  const briefsNeededCount = useMemo(() => {
+    return confirmedAgents.reduce((n, a) => {
+      const s = statuses.get(a.id);
+      const alreadyBriefed = s?.sms === "sent" || s?.email === "sent";
+      return n + (alreadyBriefed ? 0 : 1);
+    }, 0);
+  }, [confirmedAgents, statuses]);
 
   const phase = useMemo(
     () => derivePhase(statuses, vendorSent),
@@ -536,6 +561,9 @@ export default function LeadWorkspace({
           phase={phase}
           awaitingCount={awaitingCount}
           confirmedCount={confirmedCount}
+          briefsNeededCount={briefsNeededCount}
+          briefAgents={briefAgentsOnSend}
+          onToggleBriefAgents={() => setBriefAgentsOnSend((v) => !v)}
           onSend={fanOutToPicked}
           onSendToVendor={handleSendToVendor}
         />
@@ -601,6 +629,7 @@ export default function LeadWorkspace({
           membership: a.membership_status,
           rating: agentRating(a),
         }))}
+        briefsSentCount={briefsSentCount}
         nextLead={nextLead}
         onContinue={handleContinueToNext}
         onClose={() => setVendorModalOpen(false)}
@@ -646,6 +675,7 @@ function VendorSuccessModal({
   open,
   vendor,
   agents,
+  briefsSentCount,
   nextLead,
   onContinue,
   onClose,
@@ -653,6 +683,10 @@ function VendorSuccessModal({
   open: boolean;
   vendor: Lead;
   agents: VendorAgent[];
+  /** Agents who received the full brief email at the same moment the
+      vendor packet fired (deduped: those who already had it via YES
+      reply aren't counted). Zero when Sarah unticked the opt-in. */
+  briefsSentCount: number;
   nextLead: Lead | null;
   onContinue: () => void;
   onClose: () => void;
@@ -702,6 +736,16 @@ function VendorSuccessModal({
               · delivered to {vendor.vendor_name}
             </p>
           </div>
+          {briefsSentCount > 0 ? (
+            <span
+              className="chip chip-info flex items-center gap-1 shrink-0"
+              title={`Full brief also emailed to ${briefsSentCount} manually-confirmed agent${briefsSentCount === 1 ? "" : "s"} (auto-YES replies already had it)`}
+            >
+              <Send size={11} aria-hidden />
+              Brief sent to {briefsSentCount} agent
+              {briefsSentCount === 1 ? "" : "s"}
+            </span>
+          ) : null}
         </div>
 
         {/* --- Email preview: what actually landed in their inbox --- */}
